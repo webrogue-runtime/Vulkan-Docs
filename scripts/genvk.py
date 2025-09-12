@@ -480,6 +480,7 @@ def makeGenOpts(args):
         [ 'vulkan_sci.h',         [ 'VK_NV_external_sci_sync',
                                     'VK_NV_external_sci_sync2',
                                     'VK_NV_external_memory_sci_buf'], commonSuppressExtensions ],
+        [ 'vulkan_webrogue.h',    ['VK_WEBROGUE_surface'          ], commonSuppressExtensions ],
         [ 'vulkan_beta.h',        betaRequireExtensions,             betaSuppressExtensions ],
     ]
 

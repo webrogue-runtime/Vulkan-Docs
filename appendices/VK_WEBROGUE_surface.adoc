@@ -1,0 +1,26 @@
+// Copyright (c) 2025 Artem Borovik
+//
+// SPDX-License-Identifier: CC-BY-4.0
+
+include::{generated}/meta/{refprefix}VK_WEBROGUE_surface.adoc[]
+
+=== Other Extension Metadata
+
+*Last Modified Date*::
+    2025-06-24
+*IP Status*::
+    No known IP claims.
+*Contributors*::
+  - Artem Borovik, Webrogue
+
+=== Description
+
+The `VK_WEBROGUE_surface` extension is an instance extension.
+It provides a mechanism to create slink:VkSurfaceKHR objects for Webrogue window system.
+
+include::{generated}/interfaces/VK_WEBROGUE_surface.adoc[]
+
+=== Version History
+
+  * Revision 1, 2025-06-24 (Artem Borovik)
+  ** Initial draft
