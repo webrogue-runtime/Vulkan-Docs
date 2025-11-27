@@ -32,6 +32,9 @@ def orgLevelKey(name):
     # and vendor extensions
 
     prefixes = (
+        'VK_BASE_VERSION_',
+        'VK_COMPUTE_VERSION_',
+        'VK_GRAPHICS_VERSION_',
         'VK_VERSION_',
         'VKSC_VERSION_',
         'VK_KHR_',
@@ -261,7 +264,7 @@ class DocOutputGenerator(OutputGenerator):
         
         # Only output deprecation warnings for versions, for now
         if deprecatedby:
-            write("WARNING: This functionality is deprecated by " + conventions.formatVersionOrExtension(deprecatedby) + ". See <<" + deprecatedlink + ", Deprecated Functionality>> for more information.", file=fp);
+            write("WARNING: This functionality is superseded by " + conventions.formatVersionOrExtension(deprecatedby) + ". See <<" + deprecatedlink + ", Legacy Functionality>> for more information.", file=fp);
             write('', file=fp);
 
         write(source_directive, file=fp)
@@ -359,6 +362,7 @@ class DocOutputGenerator(OutputGenerator):
             #    body = body.strip()
             if alias:
                 # If the type is an alias, just emit a typedef declaration
+                body += f'// Equivalent to {alias}\n'
                 body += f"typedef {alias} {name};\n"
                 self.writeInclude(OutputGenerator.categoryToPath[category],
                                   name, body, None, None)
@@ -366,7 +370,7 @@ class DocOutputGenerator(OutputGenerator):
                 # Replace <apientry /> tags with an APIENTRY-style string
                 # (from self.genOpts). Copy other text through unchanged.
                 # If the resulting text is an empty string, do not emit it.
-                body += noneStr(typeElem.text)
+                body += noneStr(typeElem.text).lstrip()
                 for elem in typeElem:
                     if elem.tag == 'apientry':
                         body += self.genOpts.apientry + noneStr(elem.tail)
@@ -411,6 +415,7 @@ class DocOutputGenerator(OutputGenerator):
                 alias_info = self.registry.typedict[alias]
                 body += self.genStructBody(alias_info, alias)
                 body += '\n\n'
+            body += f'// Equivalent to {alias}\n'
             body += f"typedef {alias} {typeName};\n"
         else:
             body += self.genStructBody(typeinfo, typeName)
@@ -501,6 +506,7 @@ class DocOutputGenerator(OutputGenerator):
         if alias:
             # If the group name is aliased, just emit a typedef declaration
             # for the alias.
+            body += f'// Equivalent to {alias}\n'
             body += f"typedef {alias} {groupName};\n"
         else:
             expand = self.genOpts.expandEnumerants
@@ -528,6 +534,8 @@ class DocOutputGenerator(OutputGenerator):
         OutputGenerator.genCmd(self, cmdinfo, name, alias)
 
         body = self.genRequirements(name)
+        if alias and self.registry.cmddict[alias].required:
+            body += f'// Equivalent to {alias}\n'
         decls = self.makeCDecls(cmdinfo.elem)
         body += decls[0]
         self.writeInclude('protos', name, body, cmdinfo.deprecatedbyversion, cmdinfo.deprecatedlink)

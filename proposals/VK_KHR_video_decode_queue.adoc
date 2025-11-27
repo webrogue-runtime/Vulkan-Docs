@@ -218,7 +218,7 @@ Here we have two cases to consider:
   1. When a reconstructed picture is specified; and
   2. When one is not needed (as the video session was created without any DPB slots)
 
-In case of (2), the application can use the image created for the decode output picture in `dstPictureResource`, indifferent of whether the _distinct_ or _coincide_ mode is used.
+In case of (2), the application can use the image created for the decode output picture in `dstPictureResource`, regardless of whether the _distinct_ or _coincide_ mode is used.
 
 In case of (1), the behavior is as follows:
 
@@ -832,3 +832,5 @@ Currently the following layered extensions are available:
 
   * `VK_KHR_video_decode_h264` - adds support for decoding H.264/AVC video sequences
   * `VK_KHR_video_decode_h265` - adds support for decoding H.265/HEVC video sequences
+  * `VK_KHR_video_decode_vp9` - adds support for decoding VP9 video sequences
+  * `VK_KHR_video_decode_av1` - adds support for decoding AV1 video sequences

@@ -166,6 +166,109 @@ def mergeAPIs(tree, fromApiNames, toApiName):
                                 variant.set('api', toApiName)
 
 
+def mergeInternalFeatures(tree, apiName):
+    """Merge internal API features (apitype='internal') into their public dependents.
+
+    This processes the tree to find features marked with apitype='internal' and merges
+    their <require>, <deprecate>, and <remove> blocks into the first public feature
+    that depends on them. After merging, the internal features are removed from the tree.
+
+        tree - Element at the root of the hierarchy (typically <registry>)
+        apiName - the API name to process (e.g., 'vulkan', 'vulkansc')
+    """
+    import copy
+
+    # Find all features in the tree
+    features = tree.findall('feature')
+
+    # Separate internal and public features
+    internal_features = []
+    public_features = []
+
+    for feature in features:
+        api = feature.get('api', '')
+        apitype = feature.get('apitype', '')
+
+        # Only process features matching the target API
+        if apiName not in api.split(','):
+            continue
+
+        if apitype == 'internal':
+            internal_features.append(feature)
+        else:
+            public_features.append(feature)
+
+    # Build a simple dependency map from the 'depends' attributes
+    def get_dependencies(feature):
+        """Extract all dependencies from a feature's depends attribute."""
+        depends = feature.get('depends', '')
+        if not depends:
+            return set()
+        # Parse the depends expression - for simplicity, extract feature names
+        # Dependencies can be like "VK_VERSION_1_0" or "VK_VERSION_1_0+VK_KHR_feature"
+        deps = set()
+        # Split on + and , to get individual dependencies
+        for dep in depends.replace('+', ',').split(','):
+            dep = dep.strip()
+            if dep:
+                deps.add(dep)
+        return deps
+
+    def has_dependency(feature, target_name, all_features_map, visited=None):
+        """Check if feature depends on target_name (directly or transitively)."""
+        if visited is None:
+            visited = set()
+
+        feature_name = feature.get('name')
+        if feature_name in visited:
+            return False
+        visited.add(feature_name)
+
+        deps = get_dependencies(feature)
+        if target_name in deps:
+            return True
+
+        # Check transitive dependencies
+        for dep_name in deps:
+            if dep_name in all_features_map:
+                if has_dependency(all_features_map[dep_name], target_name, all_features_map, visited):
+                    return True
+        return False
+
+    # Create a map of all features for dependency lookups
+    all_features_map = {f.get('name'): f for f in public_features + internal_features}
+
+    # For each internal feature, find its first public dependent and merge
+    for internal_feature in internal_features:
+        internal_name = internal_feature.get('name')
+        target_feature = None
+
+        # Find the first public feature that depends on this internal feature
+        for public_feature in public_features:
+            if has_dependency(public_feature, internal_name, all_features_map):
+                target_feature = public_feature
+                break
+
+        if target_feature is not None:
+            # Merge require blocks
+            for require in internal_feature.findall('require'):
+                require_copy = copy.deepcopy(require)
+                target_feature.append(require_copy)
+
+            # Merge deprecate blocks
+            for deprecate in internal_feature.findall('deprecate'):
+                deprecate_copy = copy.deepcopy(deprecate)
+                target_feature.append(deprecate_copy)
+
+            # Merge remove blocks
+            for remove in internal_feature.findall('remove'):
+                remove_copy = copy.deepcopy(remove)
+                target_feature.append(remove_copy)
+
+            # Remove the internal feature from the tree
+            tree.remove(internal_feature)
+
+
 def stripNonmatchingAPIs(tree, apiName, actuallyDelete = True):
     """Remove tree Elements with 'api' attributes matching apiName.
 
@@ -210,7 +313,7 @@ class BaseInfo:
 
         self.elem = elem
         "etree Element for this feature"
-        
+
         self.deprecatedbyversion = None
         self.deprecatedbyextensions = []
         self.deprecatedlink = None
@@ -353,7 +456,7 @@ class FeatureInfo(BaseInfo):
 
             self.number = 0
             self.supported = None
-            
+
             self.deprecates = elem.findall('deprecate')
         else:
             # Extract vendor portion of <APIprefix>_<vendor>_<name>
@@ -428,6 +531,9 @@ class Registry:
         self.gen.registry = self
         self.gen.genOpts = self.genOpts
         self.gen.genOpts.registry = self
+
+        # Store mergeInternalApis in self to avoid repeated lookups
+        self.mergeInternalApis = getattr(self.genOpts, 'mergeInternalApis', True)
 
         self.tree = None
         "ElementTree containing the root `<registry>`"
@@ -601,6 +707,11 @@ class Registry:
         else:
             stripNonmatchingAPIs(self.reg, self.genOpts.apiname, actuallyDelete = True)
 
+        # Merge internal features (apitype="internal") into their public dependents
+        # This happens after API merging/stripping so we work with the correct API
+        if self.mergeInternalApis:
+            mergeInternalFeatures(self.reg, self.genOpts.apiname)
+
         self.aliasdict = {}
         self.enumvaluedict = {}
 
@@ -688,6 +799,9 @@ class Registry:
         # Now loop over aliases, injecting a copy of the aliased command's
         # Element with the aliased prototype name replaced with the command
         # name - if it exists.
+        # Copy the 'export' sttribute (whether it exists or not) from the
+        # original, aliased command, since that can be different for a
+        # command and its alias.
         for (name, alias, cmd) in cmdAlias:
             if alias in self.cmddict:
                 aliasInfo = self.cmddict[alias]
@@ -695,6 +809,14 @@ class Registry:
                 cmdElem.find('proto/name').text = name
                 cmdElem.set('name', name)
                 cmdElem.set('alias', alias)
+                export = cmd.get('export')
+                if export is not None:
+                    # Replicate the command's 'export' attribute
+                    cmdElem.set('export', export)
+                elif cmdElem.get('export') is not None:
+                    # Remove the 'export' attribute, if the alias has one but
+                    # the command does not.
+                    del cmdElem.attrib['export']
                 ci = CmdInfo(cmdElem)
                 # Replace the dictionary entry for the CmdInfo element
                 self.cmddict[name] = ci
@@ -1264,7 +1386,7 @@ class Registry:
         - featurename - name of the feature
         - api - string specifying API name being generated
         - profile - string specifying API profile being generated"""
-        
+
         versionmatch = APIConventions().is_api_version_name(featurename)
 
         # <deprecate> marks things that are deprecated by this version/profile

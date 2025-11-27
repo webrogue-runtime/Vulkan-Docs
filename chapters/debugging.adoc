@@ -1,5 +1,5 @@
 // Copyright 2015-2025 The Khronos Group Inc.
-//
+// Copyright (c) 2018-2020 NVIDIA Corporation
 // SPDX-License-Identifier: CC-BY-4.0
 
 [[debugging]]
@@ -51,17 +51,17 @@ endif::VKSC_VERSION_1_0[]
 | ename:VK_OBJECT_TYPE_DESCRIPTOR_SET        | slink:VkDescriptorSet
 | ename:VK_OBJECT_TYPE_FRAMEBUFFER           | slink:VkFramebuffer
 | ename:VK_OBJECT_TYPE_COMMAND_POOL          | slink:VkCommandPool
-ifdef::VK_VERSION_1_1,VK_KHR_sampler_ycbcr_conversion[]
+ifdef::VK_COMPUTE_VERSION_1_1,VK_KHR_sampler_ycbcr_conversion[]
 | ename:VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION | slink:VkSamplerYcbcrConversion
-endif::VK_VERSION_1_1,VK_KHR_sampler_ycbcr_conversion[]
-ifdef::VK_VERSION_1_1,VK_KHR_descriptor_update_template[]
+endif::VK_COMPUTE_VERSION_1_1,VK_KHR_sampler_ycbcr_conversion[]
+ifdef::VK_COMPUTE_VERSION_1_1,VK_KHR_descriptor_update_template[]
 ifndef::VKSC_VERSION_1_0[]
 | ename:VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE | slink:VkDescriptorUpdateTemplate
 endif::VKSC_VERSION_1_0[]
-endif::VK_VERSION_1_1,VK_KHR_descriptor_update_template[]
-ifdef::VK_VERSION_1_3,VK_EXT_private_data[]
+endif::VK_COMPUTE_VERSION_1_1,VK_KHR_descriptor_update_template[]
+ifdef::VK_BASE_VERSION_1_3,VK_EXT_private_data[]
 | ename:VK_OBJECT_TYPE_PRIVATE_DATA_SLOT | slink:VkPrivateDataSlot
-endif::VK_VERSION_1_3,VK_EXT_private_data[]
+endif::VK_BASE_VERSION_1_3,VK_EXT_private_data[]
 ifdef::VK_KHR_surface[]
 | ename:VK_OBJECT_TYPE_SURFACE_KHR           | slink:VkSurfaceKHR
 endif::VK_KHR_surface[]
@@ -120,6 +120,9 @@ ifdef::VK_ARM_tensors[]
 | ename:VK_OBJECT_TYPE_TENSOR_ARM | slink:VkTensorARM
 | ename:VK_OBJECT_TYPE_TENSOR_VIEW_ARM | slink:VkTensorViewARM
 endif::VK_ARM_tensors[]
+ifdef::VK_ARM_data_graph[]
+| ename:VK_OBJECT_TYPE_DATA_GRAPH_PIPELINE_SESSION_ARM | slink:VkDataGraphPipelineSessionARM
+endif::VK_ARM_data_graph[]
 |====
 --
 
@@ -143,8 +146,151 @@ ifdef::VK_NV_device_diagnostic_checkpoints,VK_EXT_device_fault[]
 == Device Loss Debugging
 endif::VK_NV_device_diagnostic_checkpoints,VK_EXT_device_fault[]
 
+
 ifdef::VK_NV_device_diagnostic_checkpoints[]
-include::{chapters}/VK_NV_device_diagnostic_checkpoints/device_diagnostic_checkpoints.adoc[]
+[[device-diagnostic-checkpoints]]
+=== Device Diagnostic Checkpoints
+
+Device execution progress can: be tracked for the purposes of debugging a
+device loss by annotating the command stream with application-defined
+diagnostic checkpoints.
+
+[open,refpage='vkCmdSetCheckpointNV',desc='Insert diagnostic checkpoint in command stream',type='protos']
+--
+Device diagnostic checkpoints are inserted into the command stream by
+calling flink:vkCmdSetCheckpointNV.
+
+include::{generated}/api/protos/vkCmdSetCheckpointNV.adoc[]
+
+  * pname:commandBuffer is the command buffer that will receive the marker
+  * pname:pCheckpointMarker is an opaque application-provided value that
+    will be associated with the checkpoint.
+
+include::{generated}/validity/protos/vkCmdSetCheckpointNV.adoc[]
+--
+
+Note that pname:pCheckpointMarker is treated as an opaque value.
+It does not need to be a valid pointer and will not be dereferenced by the
+implementation.
+
+ifdef::VK_BASE_VERSION_1_3,VK_KHR_synchronization2[]
+[open,refpage='vkGetQueueCheckpointData2NV',desc='Retrieve diagnostic checkpoint data',type='protos']
+--
+If the device encounters an error during execution, the implementation will
+return a ename:VK_ERROR_DEVICE_LOST error to the application at some point
+during host execution.
+When this happens, the application can: call
+flink:vkGetQueueCheckpointData2NV to retrieve information on the most recent
+diagnostic checkpoints that were executed by the device.
+
+include::{generated}/api/protos/vkGetQueueCheckpointData2NV.adoc[]
+
+  * pname:queue is the slink:VkQueue object the caller would like to
+    retrieve checkpoint data for
+  * pname:pCheckpointDataCount is a pointer to an integer related to the
+    number of checkpoint markers available or queried, as described below.
+  * pname:pCheckpointData is either `NULL` or a pointer to an array of
+    sname:VkCheckpointData2NV structures.
+
+If pname:pCheckpointData is `NULL`, then the number of checkpoint markers
+available is returned in pname:pCheckpointDataCount.
+Otherwise, pname:pCheckpointDataCount must: point to a variable set by the
+application to the number of elements in the pname:pCheckpointData array,
+and on return the variable is overwritten with the number of structures
+actually written to pname:pCheckpointData.
+
+If pname:pCheckpointDataCount is less than the number of checkpoint markers
+available, at most pname:pCheckpointDataCount structures will be written.
+
+.Valid Usage
+****
+  * [[VUID-vkGetQueueCheckpointData2NV-queue-03892]]
+    The device that pname:queue belongs to must: be in the lost state
+****
+
+include::{generated}/validity/protos/vkGetQueueCheckpointData2NV.adoc[]
+--
+
+[open,refpage='VkCheckpointData2NV',desc='Return structure for command buffer checkpoint data',type='structs']
+--
+The slink:VkCheckpointData2NV structure is defined as:
+
+include::{generated}/api/structs/VkCheckpointData2NV.adoc[]
+
+  * pname:sType is a elink:VkStructureType value identifying this structure.
+  * pname:pNext is `NULL` or a pointer to a structure extending this
+    structure.
+  * pname:stage indicates a single pipeline stage which the checkpoint
+    marker data refers to.
+  * pname:pCheckpointMarker contains the value of the last checkpoint marker
+    executed in the stage that pname:stage refers to.
+
+include::{generated}/validity/structs/VkCheckpointData2NV.adoc[]
+
+The stages at which a checkpoint marker can: be executed are
+implementation-defined and can: be queried by calling
+flink:vkGetPhysicalDeviceQueueFamilyProperties2.
+--
+endif::VK_BASE_VERSION_1_3,VK_KHR_synchronization2[]
+
+[open,refpage='vkGetQueueCheckpointDataNV',desc='Retrieve diagnostic checkpoint data',type='protos']
+--
+If the device encounters an error during execution, the implementation will
+return a ename:VK_ERROR_DEVICE_LOST error to the application at a certain
+point during host execution.
+When this happens, the application can: call
+flink:vkGetQueueCheckpointDataNV to retrieve information on the most recent
+diagnostic checkpoints that were executed by the device.
+
+include::{generated}/api/protos/vkGetQueueCheckpointDataNV.adoc[]
+
+  * pname:queue is the slink:VkQueue object the caller would like to
+    retrieve checkpoint data for
+  * pname:pCheckpointDataCount is a pointer to an integer related to the
+    number of checkpoint markers available or queried, as described below.
+  * pname:pCheckpointData is either `NULL` or a pointer to an array of
+    sname:VkCheckpointDataNV structures.
+
+If pname:pCheckpointData is `NULL`, then the number of checkpoint markers
+available is returned in pname:pCheckpointDataCount.
+
+Otherwise, pname:pCheckpointDataCount must: point to a variable set by the
+application to the number of elements in the pname:pCheckpointData array,
+and on return the variable is overwritten with the number of structures
+actually written to pname:pCheckpointData.
+
+If pname:pCheckpointDataCount is less than the number of checkpoint markers
+available, at most pname:pCheckpointDataCount structures will be written.
+
+.Valid Usage
+****
+  * [[VUID-vkGetQueueCheckpointDataNV-queue-02025]]
+    The device that pname:queue belongs to must: be in the lost state
+****
+
+include::{generated}/validity/protos/vkGetQueueCheckpointDataNV.adoc[]
+--
+
+[open,refpage='VkCheckpointDataNV',desc='Return structure for command buffer checkpoint data',type='structs']
+--
+The slink:VkCheckpointDataNV structure is defined as:
+
+include::{generated}/api/structs/VkCheckpointDataNV.adoc[]
+
+  * pname:sType is a elink:VkStructureType value identifying this structure.
+  * pname:pNext is `NULL` or a pointer to a structure extending this
+    structure.
+  * pname:stage is a ename:VkPipelineStageFlagBits value specifying which
+    pipeline stage the checkpoint marker data refers to.
+  * pname:pCheckpointMarker contains the value of the last checkpoint marker
+    executed in the stage that pname:stage refers to.
+
+The stages at which a checkpoint marker can: be executed are
+implementation-defined and can: be queried by calling
+flink:vkGetPhysicalDeviceQueueFamilyProperties2.
+
+include::{generated}/validity/structs/VkCheckpointDataNV.adoc[]
+--
 endif::VK_NV_device_diagnostic_checkpoints[]
 
 ifdef::VKSC_VERSION_1_0[]
@@ -511,20 +657,18 @@ include::{generated}/api/enums/VkDeviceFaultVendorBinaryHeaderVersionEXT.adoc[]
 endif::VK_EXT_device_fault[]
 
 
-ifdef::VK_VERSION_1_3,VK_EXT_tooling_info[]
+ifdef::VK_BASE_VERSION_1_3,VK_EXT_tooling_info[]
 [[debugging-tooling-info]]
 == Active Tooling Information
 
-[open,refpage='vkGetPhysicalDeviceToolProperties',desc='Reports properties of tools active on the specified physical device',type='protos',alias='vkGetPhysicalDeviceToolPropertiesEXT']
+[open,refpage='vkGetPhysicalDeviceToolProperties',desc='Reports properties of tools active on the specified physical device',type='protos']
 --
 Information about tools providing debugging, profiling, or similar services,
 active for a given physical device, can be obtained by calling:
 
-ifdef::VK_VERSION_1_3[]
+ifdef::VK_BASE_VERSION_1_3[]
 include::{generated}/api/protos/vkGetPhysicalDeviceToolProperties.adoc[]
-endif::VK_VERSION_1_3[]
-
-ifdef::VK_VERSION_1_3+VK_EXT_tooling_info[or the equivalent command]
+endif::VK_BASE_VERSION_1_3[]
 
 ifdef::VK_EXT_tooling_info[]
 include::{generated}/api/protos/vkGetPhysicalDeviceToolPropertiesEXT.adoc[]
@@ -554,15 +698,13 @@ time.
 include::{generated}/validity/protos/vkGetPhysicalDeviceToolProperties.adoc[]
 --
 
-[open,refpage='VkPhysicalDeviceToolProperties',desc='Structure providing information about an active tool',type='structs',alias='VkPhysicalDeviceToolPropertiesEXT']
+[open,refpage='VkPhysicalDeviceToolProperties',desc='Structure providing information about an active tool',type='structs']
 --
 The slink:VkPhysicalDeviceToolProperties structure is defined as:
 
 include::{generated}/api/structs/VkPhysicalDeviceToolProperties.adoc[]
 
 ifdef::VK_EXT_tooling_info[]
-or the equivalent
-
 include::{generated}/api/structs/VkPhysicalDeviceToolPropertiesEXT.adoc[]
 endif::VK_EXT_tooling_info[]
 
@@ -584,7 +726,7 @@ endif::VK_EXT_tooling_info[]
 include::{generated}/validity/structs/VkPhysicalDeviceToolProperties.adoc[]
 --
 
-[open,refpage='VkToolPurposeFlagBits',desc='Bitmask specifying the purposes of an active tool',type='enums',alias='VkToolPurposeFlagBitsEXT']
+[open,refpage='VkToolPurposeFlagBits',desc='Bitmask specifying the purposes of an active tool',type='enums']
 --
 Bits which can: be set in
 slink:VkPhysicalDeviceToolProperties::pname:purposes, specifying the
@@ -593,8 +735,6 @@ purposes of an active tool, are:
 include::{generated}/api/enums/VkToolPurposeFlagBits.adoc[]
 
 ifdef::VK_EXT_tooling_info[]
-or the equivalent
-
 include::{generated}/api/enums/VkToolPurposeFlagBitsEXT.adoc[]
 endif::VK_EXT_tooling_info[]
 
@@ -642,20 +782,18 @@ endif::VK_EXT_debug_utils[]
 endif::VK_EXT_debug_marker,VK_EXT_debug_utils[]
 --
 
-[open,refpage='VkToolPurposeFlags',desc='Bitmask of VkToolPurposeFlagBits',type='flags',alias='VkToolPurposeFlagsEXT']
+[open,refpage='VkToolPurposeFlags',desc='Bitmask of VkToolPurposeFlagBits',type='flags']
 --
 include::{generated}/api/flags/VkToolPurposeFlags.adoc[]
 
 ifdef::VK_EXT_tooling_info[]
-or the equivalent
-
 include::{generated}/api/flags/VkToolPurposeFlagsEXT.adoc[]
 endif::VK_EXT_tooling_info[]
 
 tlink:VkToolPurposeFlags is a bitmask type for setting a mask of zero or
 more elink:VkToolPurposeFlagBits.
 --
-endif::VK_VERSION_1_3,VK_EXT_tooling_info[]
+endif::VK_BASE_VERSION_1_3,VK_EXT_tooling_info[]
 
 
 ifdef::VK_EXT_frame_boundary[]
@@ -706,7 +844,7 @@ identifier and not reuse identifiers between frames.
 ====
 
 The pname:pImages and pname:pBuffers arrays contain a list of images and
-buffers which store the "end result" of the frame.
+buffers which store the "`end result`" of the frame.
 As the concept of frame is application-dependent, not all frames may:
 produce their results in images or buffers, yet this is a sufficiently
 common case to be handled by sname:VkFrameBoundaryEXT.
@@ -737,14 +875,14 @@ include::{generated}/api/enums/VkFrameBoundaryFlagBitsEXT.adoc[]
     submission has terminated, then the work for this frame is completed.
 --
 
-ifdef::VK_VERSION_1_2,VK_KHR_timeline_semaphore[]
+ifdef::VK_BASE_VERSION_1_2,VK_KHR_timeline_semaphore[]
 Note that in the presence of timeline semaphores, the last queue submission
 might not be the last one to be submitted, as timeline semaphores allow for
 wait-before-signal submissions.
 In the context of frame boundary, the queue submission that should be done
 flagged as the last one is the one that is meant to be executed last, even
 if it may: not be the last one to be submitted.
-endif::VK_VERSION_1_2,VK_KHR_timeline_semaphore[]
+endif::VK_BASE_VERSION_1_2,VK_KHR_timeline_semaphore[]
 
 [open,refpage='VkFrameBoundaryFlagsEXT',desc='Bitmask of VkFrameBoundaryFlagBitsEXT',type='flags']
 --
