@@ -101,7 +101,6 @@ branch of the member gitlab server.
         <type category="include" name="screen/screen.h"/>
         <type category="include" name="nvscisync.h"/>
         <type category="include" name="nvscibuf.h"/>
-        <type category="include" name="webroguegfx/webroguegfx.h"/>
             <comment>
                 In the current header structure, each platform's interfaces
                 are confined to a platform-specific header (vulkan_xlib.h,
@@ -148,7 +147,6 @@ branch of the member gitlab server.
         <type requires="nvscisync.h" name="NvSciSyncFence"/>
         <type requires="nvscibufaaaa.h" name="NvSciBufAttrList"/>
         <type requires="nvscibufaaaa.h" name="NvSciBufObj"/>
-        <type requires="webroguegfx/webroguegfx.h" name="wr_window_handle"/>
 
         <type category="define">
 #define <name>VK_MAKE_VERSION</name>(major, minor, patch) \
@@ -10609,7 +10607,7 @@ typedef void* <name>MTLSharedEvent_id</name>;
             <member values="VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_WEBROGUE"><type>VkStructureType</type> <name>sType</name></member>
             <member optional="true">const <type>void</type>*                       <name>pNext</name></member>
             <member optional="true"><type>VkSurfaceCreateFlagsWEBROGUE</type>      <name>flags</name></member>
-            <member><type>wr_window_handle</type>                                  <name>window</name></member>
+            <member><type>void</type>*                                             <name>window</name></member>
         </type>
         <type category="struct" name="VkExternalComputeQueueDeviceCreateInfoNV" structextends="VkDeviceCreateInfo">
             <member values="VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_DEVICE_CREATE_INFO_NV"><type>VkStructureType</type> <name>sType</name></member>

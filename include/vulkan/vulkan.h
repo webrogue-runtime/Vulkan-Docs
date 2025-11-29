@@ -93,7 +93,6 @@
 
 
 #ifdef VK_USE_PLATFORM_WEBROGUE
-#include <webroguegfx/webroguegfx.h>
 #include "vulkan_webrogue.h"
 #endif
 
