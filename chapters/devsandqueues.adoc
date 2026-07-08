@@ -1,4 +1,4 @@
-// Copyright 2015-2025 The Khronos Group Inc.
+// Copyright 2015-2026 The Khronos Group Inc.
 // Copyright (c) 2018-2020 NVIDIA Corporation
 // SPDX-License-Identifier: CC-BY-4.0
 
@@ -619,15 +619,15 @@ such a restriction exists as defined in the compatibility table for the
 particular object type:
 
 ifdef::VK_BASE_VERSION_1_1,VK_KHR_external_memory_capabilities[]
-  * <<external-memory-handle-types-compatibility,External memory handle
+  * <<external-memory-handle-types-compatibility, External memory handle
     types compatibility>>
 endif::VK_BASE_VERSION_1_1,VK_KHR_external_memory_capabilities[]
 ifdef::VK_BASE_VERSION_1_1,VK_KHR_external_semaphore_capabilities[]
-  * <<external-semaphore-handle-types-compatibility,External semaphore
+  * <<external-semaphore-handle-types-compatibility, External semaphore
     handle types compatibility>>
 endif::VK_BASE_VERSION_1_1,VK_KHR_external_semaphore_capabilities[]
 ifdef::VK_BASE_VERSION_1_1,VK_KHR_external_fence_capabilities[]
-  * <<external-fence-handle-types-compatibility,External fence handle types
+  * <<external-fence-handle-types-compatibility, External fence handle types
     compatibility>>
 endif::VK_BASE_VERSION_1_1,VK_KHR_external_fence_capabilities[]
 
@@ -1235,6 +1235,11 @@ include::{generated}/api/enums/VkPhysicalDeviceSchedulingControlsFlagBitsARM.ado
     specifies that a slink:VkDeviceQueueShaderCoreControlCreateInfoARM
     structure may: be included in the pname:pNext chain of a
     slink:VkDeviceQueueCreateInfo or slink:VkDeviceCreateInfo structure.
+  * ename:VK_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_DISPATCH_PARAMETERS_ARM
+    specifies that a flink:vkCmdSetDispatchParametersARM command may: be
+    recorded in a command buffer and that properties returned in
+    slink:VkPhysicalDeviceSchedulingControlsDispatchParametersPropertiesARM
+    are valid.
 --
 
 [open,refpage='VkPhysicalDeviceSchedulingControlsFlagsARM',desc='Bitmask of VkPhysicalDeviceSchedulingControlsFlagBitsARM',type='flags']
@@ -1244,6 +1249,36 @@ include::{generated}/api/flags/VkPhysicalDeviceSchedulingControlsFlagsARM.adoc[]
 tname:VkPhysicalDeviceSchedulingControlsFlagsARM is a bitmask type for
 setting a mask of zero or more
 elink:VkPhysicalDeviceSchedulingControlsFlagBitsARM.
+--
+
+[open,refpage='VkPhysicalDeviceSchedulingControlsDispatchParametersPropertiesARM',desc='Structure containing scheduling control dispatch parameters properties of a physical device',type='structs']
+--
+The sname:VkPhysicalDeviceSchedulingControlsDispatchParametersPropertiesARM
+structure is defined as:
+
+include::{generated}/api/structs/VkPhysicalDeviceSchedulingControlsDispatchParametersPropertiesARM.adoc[]
+
+  * [[limits-schedulingControlsMaxWarpsCount]]pname:schedulingControlsMaxWarpsCount
+    specifies the maximum number of warps that a shader core can: run
+    concurrently.
+  * [[limits-schedulingControlsMaxQueuedWorkgroupBatchesCount]]pname:schedulingControlsMaxQueuedWorkgroupBatchesCount
+    specifies the maximum number of workgroup batches that a shader core
+    can: queue.
+  * [[limits-schedulingControlsMaxWorkGroupBatchSize]]pname:schedulingControlsMaxWorkGroupBatchSize
+    specifies the maximum size of workgroup batches that can: be requested
+    using slink:VkDispatchParametersARM::pname:workGroupBatchSize.
+
+:refpage: VkPhysicalDeviceSchedulingControlsDispatchParametersPropertiesARM
+include::{chapters}/limits.adoc[tag=limits_desc]
+
+If
+slink:VkPhysicalDeviceSchedulingControlsPropertiesARM::pname:schedulingControlsFlags
+does not contain
+ename:VK_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_DISPATCH_PARAMETERS_ARM then
+pname:schedulingControlsMaxWarpCount and
+pname:schedulingControlsMaxQueuedBatchesCount are undefined:.
+
+include::{generated}/validity/structs/VkPhysicalDeviceSchedulingControlsDispatchParametersPropertiesARM.adoc[]
 --
 endif::VK_ARM_scheduling_controls[]
 
@@ -1338,13 +1373,24 @@ Possible values of pname:minImageTransferGranularity are:
      calculations the granularity must: be scaled up by the compressed texel
      block dimensions.
 
-Queues supporting graphics and/or compute operations must: report
-[eq]#(1,1,1)# in pname:minImageTransferGranularity, meaning that there are
-no additional restrictions on the granularity of image transfer operations
-for these queues.
+Queues supporting graphics and/or compute
+ifdef::VK_KHR_maintenance11[]
+and/or, if the <<features-maintenance11,pname:maintenance11>> feature is
+supported, transfer
+endif::VK_KHR_maintenance11[]
+operations, must: report [eq]#(1,1,1)# in pname:minImageTransferGranularity,
+meaning that there are no additional restrictions on the granularity of
+image transfer operations for these queues.
 Other queues supporting image transfer operations are only required: to
 support whole mip level transfers, thus pname:minImageTransferGranularity
 for queues belonging to such queue families may: be [eq]#(0,0,0)#.
+
+ifdef::VK_KHR_maintenance11[]
+If the <<features-maintenance11,pname:maintenance11>> feature is supported,
+slink:VkQueueFamilyOptimalImageTransferGranularityPropertiesKHR::pname:optimalImageTransferGranularity
+can: be used to determine the optimal image transfer granularity for a
+particular queue family.
+endif::VK_KHR_maintenance11[]
 
 The <<memory-device,Device Memory>> section describes memory properties
 queried from the physical device.
@@ -1370,7 +1416,7 @@ include::{generated}/api/enums/VkQueueFlagBits.adoc[]
   * ename:VK_QUEUE_SPARSE_BINDING_BIT specifies that queues in this queue
     family support sparse memory management operations (see
     <<sparsememory,Sparse Resources>>).
-    If any of the sparse resource features are enabled, then at least one
+    If any of the sparse resource features are supported, then at least one
     queue family must: support this bit.
 ifdef::VKSC_VERSION_1_0[]
     This flag is not supported in Vulkan SC <<SCID-8>>.
@@ -1405,6 +1451,19 @@ ifdef::VK_BASE_VERSION_1_1[]
     pname:protectedMemory>> feature, at least one of its queue families
     must: support this bit.
 endif::VK_BASE_VERSION_1_1[]
+
+At least one queue family of at least one physical device exposed by the
+implementation must: support at least one of the following sets of
+operations:
+
+  * graphics operations
+  * compute operations
+ifdef::VK_KHR_video_encode_queue[]
+  * video encode operations
+endif::VK_KHR_video_encode_queue[]
+ifdef::VK_KHR_video_decode_queue[]
+  * video decode operations
+endif::VK_KHR_video_decode_queue[]
 
 If an implementation exposes any queue family that supports graphics
 operations, at least one queue family of at least one physical device
@@ -1522,7 +1581,7 @@ The valid elements of pname:priorities must: not contain any duplicate
 values.
 
 The valid elements of pname:priorities must: be a continuous sequence of
-elink:VkQueueGlobalPriority enums in the ascending order.
+elink:VkQueueGlobalPriority enums in ascending order.
 
 [NOTE]
 ====
@@ -1645,7 +1704,189 @@ include::{generated}/validity/structs/VkQueueFamilyQueryResultStatusPropertiesKH
 endif::VK_KHR_video_queue[]
 
 ifdef::VK_KHR_performance_query[]
-include::{chapters}/VK_KHR_performance_query/queuefamily.adoc[]
+[open,refpage='vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR',desc='Reports properties of the performance query counters available on a queue family of a device',type='protos']
+--
+:refpage: vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR
+
+To enumerate the performance query counters available on a queue family of a
+physical device, call:
+
+include::{generated}/api/protos/vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR.adoc[]
+
+  * pname:physicalDevice is the handle to the physical device whose queue
+    family performance query counter properties will be queried.
+  * pname:queueFamilyIndex is the index into the queue family of the
+    physical device we want to get properties for.
+  * pname:pCounterCount is a pointer to an integer related to the number of
+    counters available or queried, as described below.
+  * pname:pCounters is either `NULL` or a pointer to an array of
+    slink:VkPerformanceCounterKHR structures.
+  * pname:pCounterDescriptions is either `NULL` or a pointer to an array of
+    slink:VkPerformanceCounterDescriptionKHR structures.
+
+If pname:pCounters is `NULL` and pname:pCounterDescriptions is `NULL`, then
+the number of counters available is returned in pname:pCounterCount.
+Otherwise, pname:pCounterCount must: point to a variable set by the
+application to the number of elements in the pname:pCounters,
+pname:pCounterDescriptions, or both arrays and on return the variable is
+overwritten with the number of structures actually written out.
+If pname:pCounterCount is less than the number of counters available, at
+most pname:pCounterCount structures will be written, and ename:VK_INCOMPLETE
+will be returned instead of ename:VK_SUCCESS, to indicate that not all the
+available counters were returned.
+
+include::{chapters}/commonvalidity/no_dynamic_allocations_common.adoc[]
+
+include::{generated}/validity/protos/vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR.adoc[]
+--
+
+[open,refpage='VkPerformanceCounterKHR',desc='Structure providing information about a counter',type='structs']
+--
+The sname:VkPerformanceCounterKHR structure is defined as:
+
+include::{generated}/api/structs/VkPerformanceCounterKHR.adoc[]
+
+  * pname:sType is a elink:VkStructureType value identifying this structure.
+  * pname:pNext is `NULL` or a pointer to a structure extending this
+    structure.
+  * pname:unit is a elink:VkPerformanceCounterUnitKHR specifying the unit
+    that the counter data will record.
+  * pname:scope is a elink:VkPerformanceCounterScopeKHR specifying the scope
+    that the counter belongs to.
+  * pname:storage is a elink:VkPerformanceCounterStorageKHR specifying the
+    storage type that the counter's data uses.
+  * pname:uuid is an array of size ename:VK_UUID_SIZE, containing 8-bit
+    values that represent a universally unique identifier for the counter of
+    the physical device.
+
+include::{generated}/validity/structs/VkPerformanceCounterKHR.adoc[]
+--
+
+[open,refpage='VkPerformanceCounterUnitKHR',desc='Supported counter unit types',type='enums']
+--
+Performance counters have an associated unit.
+This unit describes how to interpret the performance counter result.
+
+The performance counter unit types which may: be returned in
+slink:VkPerformanceCounterKHR::pname:unit are:
+
+include::{generated}/api/enums/VkPerformanceCounterUnitKHR.adoc[]
+
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_GENERIC_KHR - the performance counter
+    unit is a generic data point.
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_PERCENTAGE_KHR - the performance
+    counter unit is a percentage (%).
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_NANOSECONDS_KHR - the performance
+    counter unit is a value of nanoseconds (ns).
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_BYTES_KHR - the performance counter
+    unit is a value of bytes.
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_BYTES_PER_SECOND_KHR - the performance
+    counter unit is a value of bytes/s.
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_KELVIN_KHR - the performance counter
+    unit is a temperature reported in Kelvin.
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_WATTS_KHR - the performance counter
+    unit is a value of watts (W).
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_VOLTS_KHR - the performance counter
+    unit is a value of volts (V).
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_AMPS_KHR - the performance counter
+    unit is a value of amps (A).
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_HERTZ_KHR - the performance counter
+    unit is a value of hertz (Hz).
+  * ename:VK_PERFORMANCE_COUNTER_UNIT_CYCLES_KHR - the performance counter
+    unit is a value of cycles.
+--
+
+[open,refpage='VkPerformanceCounterScopeKHR',desc='Supported counter scope types',type='enums']
+--
+Performance counters have an associated scope.
+This scope describes the granularity of a performance counter.
+
+The performance counter scope types which may: be returned in
+slink:VkPerformanceCounterKHR::pname:scope are:
+
+include::{generated}/api/enums/VkPerformanceCounterScopeKHR.adoc[]
+
+  * ename:VK_PERFORMANCE_COUNTER_SCOPE_COMMAND_BUFFER_KHR - the performance
+    counter scope is a single complete command buffer.
+  * ename:VK_PERFORMANCE_COUNTER_SCOPE_RENDER_PASS_KHR - the performance
+    counter scope is zero or more complete render passes.
+    The performance query containing the performance counter must: begin and
+    end outside a render pass instance.
+  * ename:VK_PERFORMANCE_COUNTER_SCOPE_COMMAND_KHR - the performance counter
+    scope is zero or more commands.
+--
+
+[open,refpage='VkPerformanceCounterStorageKHR',desc='Supported counter storage types',type='enums']
+--
+Performance counters have an associated storage.
+This storage describes the payload of a counter result.
+
+The performance counter storage types which may: be returned in
+slink:VkPerformanceCounterKHR::pname:storage are:
+
+include::{generated}/api/enums/VkPerformanceCounterStorageKHR.adoc[]
+
+  * ename:VK_PERFORMANCE_COUNTER_STORAGE_INT32_KHR - the performance counter
+    storage is a 32-bit signed integer.
+  * ename:VK_PERFORMANCE_COUNTER_STORAGE_INT64_KHR - the performance counter
+    storage is a 64-bit signed integer.
+  * ename:VK_PERFORMANCE_COUNTER_STORAGE_UINT32_KHR - the performance
+    counter storage is a 32-bit unsigned integer.
+  * ename:VK_PERFORMANCE_COUNTER_STORAGE_UINT64_KHR - the performance
+    counter storage is a 64-bit unsigned integer.
+  * ename:VK_PERFORMANCE_COUNTER_STORAGE_FLOAT32_KHR - the performance
+    counter storage is a 32-bit floating-point.
+  * ename:VK_PERFORMANCE_COUNTER_STORAGE_FLOAT64_KHR - the performance
+    counter storage is a 64-bit floating-point.
+--
+
+[open,refpage='VkPerformanceCounterDescriptionKHR',desc='Structure providing more detailed information about a counter',type='structs']
+--
+The sname:VkPerformanceCounterDescriptionKHR structure is defined as:
+
+include::{generated}/api/structs/VkPerformanceCounterDescriptionKHR.adoc[]
+
+  * pname:sType is a elink:VkStructureType value identifying this structure.
+  * pname:pNext is `NULL` or a pointer to a structure extending this
+    structure.
+  * pname:flags is a bitmask of
+    elink:VkPerformanceCounterDescriptionFlagBitsKHR indicating the usage
+    behavior for the counter.
+  * pname:name is an array of size ename:VK_MAX_DESCRIPTION_SIZE, containing
+    a null-terminated UTF-8 string specifying the name of the counter.
+  * pname:category is an array of size ename:VK_MAX_DESCRIPTION_SIZE,
+    containing a null-terminated UTF-8 string specifying the category of the
+    counter.
+  * pname:description is an array of size ename:VK_MAX_DESCRIPTION_SIZE,
+    containing a null-terminated UTF-8 string specifying the description of
+    the counter.
+
+include::{generated}/validity/structs/VkPerformanceCounterDescriptionKHR.adoc[]
+--
+
+[open,refpage='VkPerformanceCounterDescriptionFlagBitsKHR',desc='Bitmask specifying usage behavior for a counter',type='enums']
+--
+Bits which can: be set in
+slink:VkPerformanceCounterDescriptionKHR::pname:flags, specifying usage
+behavior of a performance counter, are:
+
+include::{generated}/api/enums/VkPerformanceCounterDescriptionFlagBitsKHR.adoc[]
+
+  * ename:VK_PERFORMANCE_COUNTER_DESCRIPTION_PERFORMANCE_IMPACTING_BIT_KHR
+    specifies that recording the counter may: have a noticeable performance
+    impact.
+  * ename:VK_PERFORMANCE_COUNTER_DESCRIPTION_CONCURRENTLY_IMPACTED_BIT_KHR
+    specifies that concurrently recording the counter while other submitted
+    command buffers are running may: impact the accuracy of the recording.
+--
+
+[open,refpage='VkPerformanceCounterDescriptionFlagsKHR',desc='Bitmask of VkPerformanceCounterDescriptionFlagBitsKHR',type='flags']
+--
+include::{generated}/api/flags/VkPerformanceCounterDescriptionFlagsKHR.adoc[]
+
+tlink:VkPerformanceCounterDescriptionFlagsKHR is a bitmask type for setting
+a mask of zero or more elink:VkPerformanceCounterDescriptionFlagBitsKHR.
+--
 endif::VK_KHR_performance_query[]
 
 ifdef::VK_KHR_maintenance9[]
@@ -1673,6 +1914,67 @@ queue family ownership properties for the specified queue family.
 include::{generated}/validity/structs/VkQueueFamilyOwnershipTransferPropertiesKHR.adoc[]
 --
 endif::VK_KHR_maintenance9[]
+
+ifdef::VK_KHR_maintenance11[]
+[open,refpage='VkQueueFamilyOptimalImageTransferGranularityPropertiesKHR',desc='Structure specifying the optimal image transfer granularity for a queue family',type='structs']
+--
+The slink:VkQueueFamilyOptimalImageTransferGranularityPropertiesKHR
+structure is defined as:
+
+include::{generated}/api/structs/VkQueueFamilyOptimalImageTransferGranularityPropertiesKHR.adoc[]
+
+  * pname:sType is a elink:VkStructureType value identifying this structure.
+  * pname:pNext is `NULL` or a pointer to a structure extending this
+    structure.
+  * pname:optimalImageTransferGranularity is the optimal granularity for
+    image copy operations in this queue family.
+
+If this structure is included in the pname:pNext chain of the
+slink:VkQueueFamilyProperties2 structure passed to
+flink:vkGetPhysicalDeviceQueueFamilyProperties2, then it is filled with the
+optimal image transfer granularity for the specified queue family.
+
+The value returned in pname:optimalImageTransferGranularity has a unit of
+compressed texel blocks for images having a block-compressed format, and a
+unit of texels otherwise.
+
+Possible values of pname:optimalImageTransferGranularity are:
+
+  * [eq]#(0,0,0)# specifies that an image copy operation is optimal only
+    when copying whole mip levels, i.e. all of the following conditions are
+    met:
+  ** The pname:x, pname:y, and pname:z members of a slink:VkOffset3D are
+     zero.
+  ** The pname:width, pname:height, and pname:depth members of a
+     slink:VkExtent3D parameter match the width, height, and depth of the
+     image subresource corresponding to the parameter, respectively.
+  * [eq]#(A~x~, A~y~, A~z~)# where [eq]#A~x~#, [eq]#A~y~#, and [eq]#A~z~#
+    are all integer powers of two.
+    An image copy operation is optimal when all of the following conditions
+    are met:
+  ** pname:width of a slink:VkExtent3D parameter is an integer multiple of
+     [eq]#A~x~#, or else [eq]#pname:x {plus} pname:width# equals the width
+     of the image subresource corresponding to the parameter.
+  ** pname:height of a slink:VkExtent3D parameter is an integer multiple of
+     [eq]#A~y~#, or else [eq]#pname:y {plus} pname:height# equals the height
+     of the image subresource corresponding to the parameter.
+  ** pname:depth of a slink:VkExtent3D parameter is an integer multiple of
+     [eq]#A~z~#, or else [eq]#pname:z {plus} pname:depth# equals the depth
+     of the image subresource corresponding to the parameter.
+  ** If the format of the image corresponding to the parameters is one of
+     the block-compressed formats then for the purposes of the above
+     calculations the granularity must: be scaled up by the compressed texel
+     block dimensions.
+
+[NOTE]
+====
+While it is not required that copies are optimal, there may be a performance
+cost for copies not aligned to pname:optimalImageTransferGranularity.
+====
+
+include::{generated}/validity/structs/VkQueueFamilyOptimalImageTransferGranularityPropertiesKHR.adoc[]
+--
+endif::VK_KHR_maintenance11[]
 
 ifdef::VK_ARM_performance_counters_by_region[]
 [open,refpage='vkEnumeratePhysicalDeviceQueueFamilyPerformanceCountersByRegionARM',desc='Reports properties of the by region performance counters available on a queue family of a device',type='protos']
@@ -2023,7 +2325,7 @@ endif::VK_EXT_application_parameters[]
     All <<extendingvulkan-extensions-extensiondependencies, required device
     extensions>> for each extension in the
     slink:VkDeviceCreateInfo::pname:ppEnabledExtensionNames list must: also
-    be present in that list.
+    be present in that list
 ifdef::VK_EXT_application_parameters[]
   * [[VUID-vkCreateDevice-key-05092]]
     The pname:key value of each slink:VkApplicationParametersEXT structure
@@ -2065,9 +2367,13 @@ include::{generated}/api/structs/VkDeviceCreateInfo.adoc[]
     requested to be created along with the logical device.
     Refer to the <<devsandqueues-queue-creation,Queue Creation>> section
     below for further details.
-  * pname:enabledLayerCount is legacy and ignored.
+  * pname:enabledLayerCount is legacy and not used.
+    Implementations must: not access this parameter.
+    It must: be 0.
     See <<legacy-devicelayers>>.
-  * pname:ppEnabledLayerNames is legacy and ignored.
+  * pname:ppEnabledLayerNames is legacy and not used.
+    Implementations must: not access this parameter.
+    It must: be `NULL`.
     See <<legacy-devicelayers>>.
   * pname:enabledExtensionCount is the number of device extensions to
     enable.
@@ -2087,13 +2393,9 @@ endif::VK_BASE_VERSION_1_1[]
 .Valid Usage
 ****
   * [[VUID-VkDeviceCreateInfo-queueFamilyIndex-02802]]
-    The pname:queueFamilyIndex member of each element of
-    pname:pQueueCreateInfos must: be unique within pname:pQueueCreateInfos
-ifdef::VK_BASE_VERSION_1_1[]
-    , except that two members can share the same pname:queueFamilyIndex if
-    one describes protected-capable queues and one describes queues that are
-    not protected-capable
-endif::VK_BASE_VERSION_1_1[]
+    The combination of the values in the pname:queueFamilyIndex and
+    pname:flags members of each element of pname:pQueueCreateInfos must: be
+    unique within pname:pQueueCreateInfos
 ifdef::VK_BASE_VERSION_1_1[]
   * [[VUID-VkDeviceCreateInfo-pQueueCreateInfos-06755]]
     If multiple elements of pname:pQueueCreateInfos share the same
@@ -2381,6 +2683,10 @@ ifdef::VK_QCOM_data_graph_model[]
     included in pname:pNext with <<features-dataGraphModelQCOM,
     dataGraphModel>> set to ename:VK_TRUE
 endif::VK_QCOM_data_graph_model[]
+  * [[VUID-VkDeviceCreateInfo-enabledLayerCount-12384]]
+    pname:enabledLayerCount must: be 0
+  * [[VUID-VkDeviceCreateInfo-ppEnabledLayerNames-12385]]
+    pname:ppEnabledLayerNames must: be `NULL`
 ****
 
 include::{generated}/validity/structs/VkDeviceCreateInfo.adoc[]
@@ -2557,7 +2863,8 @@ include::{generated}/api/structs/VkDeviceDeviceMemoryReportCreateInfoEXT.adoc[]
     structure.
   * pname:flags is 0 and reserved for future use.
   * pname:pfnUserCallback is the application callback function to call.
-  * pname:pUserData is user data to be passed to the callback.
+  * pname:pUserData is NULL or an application-defined user data pointer to
+    be passed to the callback.
 
 The callback may: be called from multiple threads simultaneously.
 
@@ -2583,8 +2890,10 @@ include::{generated}/api/funcpointers/PFN_vkDeviceMemoryReportCallbackEXT.adoc[]
 
   * pname:pCallbackData contains all the callback related data in the
     slink:VkDeviceMemoryReportCallbackDataEXT structure.
-  * pname:pUserData is the user data provided when the
-    slink:VkDeviceDeviceMemoryReportCreateInfoEXT was created.
+  * pname:pUserData is the application-defined user data pointer, equal to
+    the value of
+    slink:VkDeviceDeviceMemoryReportCreateInfoEXT::pname:pUserData specified
+    when the slink:VkDevice object was created.
 
 The callback must: not make calls to any Vulkan commands.
 --
@@ -3060,7 +3369,7 @@ references on where to find more information:
   * Creation and destruction of command buffers and command buffer pools.
     See <<commandbuffers,Command Buffers>> for further details.
   * Creation, destruction, and management of graphics state.
-    See <<pipelines,Pipelines>> and <<descriptorsets,Resource Descriptors>>,
+    See <<pipelines,Pipelines>> and <<descriptors,Resource Descriptors>>,
     among others, for further details.
 
 
@@ -3326,6 +3635,23 @@ endif::VK_BASE_VERSION_1_1[]
     will be submitted to each created queue.
     See <<devsandqueues-priority,Queue Priority>> for more information.
 
+Some queue families support functionality which requires a device feature or
+extension to be enabled, as indicated by the
+slink:VkQueueFamilyProperties::pname:queueFlags member.
+Applications may: create such queues and submit <<devsandqueues-submission,
+queue submission commands>> to them without enabling the corresponding
+feature or extension, but must: not utilize the specific functionality that
+they did not enable.
+
+For example, <<sparsememory, sparse memory management operations>> can: be
+performed on queues from queue families exposing the
+ename:VK_QUEUE_SPARSE_BINDING_BIT bit, provided the
+<<features-sparseBinding, sparseBinding>> feature is enabled.
+If a queue family supports both the ename:VK_QUEUE_SPARSE_BINDING_BIT and
+ename:VK_QUEUE_TRANSFER_BIT bits, applications may: create a queue from this
+family and issue transfer operations without enabling the
+<<features-sparseBinding, sparseBinding>> feature.
+
 .Valid Usage
 ****
   * [[VUID-VkDeviceQueueCreateInfo-queueFamilyIndex-00381]]
@@ -3358,6 +3684,13 @@ ifdef::VK_ARM_scheduling_controls[]
     must: contain
     ename:VK_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_SHADER_CORE_COUNT_ARM
 endif::VK_ARM_scheduling_controls[]
+ifdef::VK_KHR_internally_synchronized_queues[]
+  * [[VUID-VkDeviceQueueCreateInfo-internallySynchronizedQueues-12348]]
+    If the <<features-internallySynchronizedQueues,
+    pname:internallySynchronizedQueues>> feature is not enabled, pname:flags
+    must: not include
+    ename:VK_DEVICE_QUEUE_CREATE_INTERNALLY_SYNCHRONIZED_BIT_KHR
+endif::VK_KHR_internally_synchronized_queues[]
 ****
 
 include::{generated}/validity/structs/VkDeviceQueueCreateInfo.adoc[]
@@ -3373,6 +3706,11 @@ include::{generated}/api/enums/VkDeviceQueueCreateFlagBits.adoc[]
 
   * ename:VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT specifies that the device
     queue is a protected-capable queue.
+ifdef::VK_KHR_internally_synchronized_queues[]
+  * ename:VK_DEVICE_QUEUE_CREATE_INTERNALLY_SYNCHRONIZED_BIT_KHR specifies
+    that the device queue is internally synchronized and does not require
+    external synchronization.
+endif::VK_KHR_internally_synchronized_queues[]
 --
 endif::VK_BASE_VERSION_1_1[]
 
@@ -3708,6 +4046,148 @@ sname:VkDevice to starve queues on another sname:VkDevice.
 No specific guarantees are made about higher priority queues receiving more
 processing time or better quality of service than lower priority queues.
 
+ifdef::VK_QCOM_queue_perf_hint[]
+[[devsandqueues-perfhint]]
+==== Queue Performance Hints
+
+Each queue has performance hint state, which defaults to
+ename:VK_PERF_HINT_TYPE_DEFAULT_QCOM when creating them with device.
+
+Applications can: set a performance hint on the queue to influence the power
+and performance settings for the operation of the device while the queue is
+active.
+This state persists for the lifetime of the queue object and resets when the
+queue is destroyed or replaced when another performance hint is set on
+queue.
+
+Determination of whether or not a queue is active is
+implementation-dependent.
+Submitting commands to an inactive queue reapplies the queue's current
+performance hint state to device.
+
+[open,refpage='vkQueueSetPerfHintQCOM',desc='Set a performance hint on a queue',type='protos']
+--
+To set a performance hint on a slink:VkQueue object, call:
+
+include::{generated}/api/protos/vkQueueSetPerfHintQCOM.adoc[]
+
+  * pname:queue is the queue to set the performance hint on.
+  * pname:pPerfHintInfo is a pointer to a slink:VkPerfHintInfoQCOM
+    structure, describing the performance hint to set.
+
+.Valid Usage
+****
+  * [[VUID-vkQueueSetPerfHintQCOM-queuePerfHint-12387]]
+    The <<features-queuePerfHint,pname:queuePerfHint>> feature must: be
+    enabled
+  * [[VUID-vkQueueSetPerfHintQCOM-queue-12388]]
+    pname:queue must: support at least one of the queue types specified in
+    slink:VkPhysicalDeviceQueuePerfHintPropertiesQCOM::pname:supportedQueues
+****
+
+include::{generated}/validity/protos/vkQueueSetPerfHintQCOM.adoc[]
+--
+
+[open,refpage='VkPerfHintInfoQCOM',desc='Structure specifying the parameters used for setting a performance hint on a queue',type='structs']
+--
+The sname:VkPerfHintInfoQCOM structure is defined as:
+
+include::{generated}/api/structs/VkPerfHintInfoQCOM.adoc[]
+
+  * pname:sType is a elink:VkStructureType value identifying this structure.
+  * pname:pNext is `NULL` or a pointer to a structure extending this
+    structure.
+  * pname:type is a elink:VkPerfHintTypeQCOM value indicating the type of
+    performance hint to apply.
+  * pname:scale is a normalized fixed-point scale factor.
+
+The device has two global frequency constraints, `f~min~` and `f~max~`, that
+can be influenced by the ename:VK_PERF_HINT_TYPE_FREQUENCY_MIN_QCOM,
+ename:VK_PERF_HINT_TYPE_FREQUENCY_MAX_QCOM, and
+ename:VK_PERF_HINT_TYPE_FREQUENCY_SCALED_QCOM performance hints.
+These constraints determine the range of clock frequencies that the platform
+performance algorithms may: select from.
+If no constraints are set, `f~min~` and `f~max~` are set to the minimum and
+maximum frequencies the device can support, `F~min~` and `F~max~`
+respectively.
+
+The `f~min~` constraint applied by
+ename:VK_PERF_HINT_TYPE_FREQUENCY_SCALED_QCOM is calculated with the
+following:
+
+  {empty}:: latexmath:[f_{min} = \lfloor\frac{scale}{100} \times
+            F_{max}\rfloor]
+
+The implementation rounds `f~min~` down to the next available lower
+frequency the device supports, clamped to `F~min~`.
+
+The global frequency constraints are determined by combining the performance
+hints from all of the device's active queues of all processes on the host.
+Performance hints that influence device frequency are ranked, where a higher
+ranked hint supersedes all lower ranked hints.
+These are listed in order of highest rank to lowest:
+
+  * ename:VK_PERF_HINT_TYPE_FREQUENCY_MAX_QCOM
+  * ename:VK_PERF_HINT_TYPE_FREQUENCY_SCALED_QCOM and pname:scale equal to
+    `100`
+  * ename:VK_PERF_HINT_TYPE_FREQUENCY_SCALED_QCOM and pname:scale equal to
+    `99`
+  * ename:VK_PERF_HINT_TYPE_FREQUENCY_SCALED_QCOM and pname:scale equal to
+    `98`
+  * ...
+  * ename:VK_PERF_HINT_TYPE_FREQUENCY_SCALED_QCOM and pname:scale equal to
+    `0`
+  * ename:VK_PERF_HINT_TYPE_DEFAULT_QCOM
+  * ename:VK_PERF_HINT_TYPE_FREQUENCY_MIN_QCOM
+
+[NOTE]
+====
+This means that ename:VK_PERF_HINT_TYPE_FREQUENCY_MIN_QCOM only takes effect
+if all of the device's other active queues running on the host also have the
+ename:VK_PERF_HINT_TYPE_FREQUENCY_MIN_QCOM hint applied.
+
+If any queue is active that never had a performance hint applied and
+therefore is in the ename:VK_PERF_HINT_TYPE_DEFAULT_QCOM state, it will
+supersede in setting the constraints over
+ename:VK_PERF_HINT_TYPE_FREQUENCY_MIN_QCOM.
+This is necessary to avoid negatively impacting performance for normal
+queues while a low power queue is active.
+====
+
+.Valid Usage
+****
+  * [[VUID-VkPerfHintInfoQCOM-type-12389]]
+    If pname:type is not ename:VK_PERF_HINT_TYPE_FREQUENCY_SCALED_QCOM,
+    pname:scale must: equal `0`
+  * [[VUID-VkPerfHintInfoQCOM-scale-12390]]
+    pname:scale must: be less than or equal to `100`
+****
+
+include::{generated}/validity/structs/VkPerfHintInfoQCOM.adoc[]
+--
+
+[open,refpage='VkPerfHintTypeQCOM',desc='Specifies the performance hint type',type='enums']
+--
+Possible values of slink:VkPerfHintInfoQCOM::pname:type, specifying the type
+of performance hint to apply, are:
+
+include::{generated}/api/enums/VkPerfHintTypeQCOM.adoc[]
+
+  * ename:VK_PERF_HINT_TYPE_DEFAULT_QCOM resets the performance hint state
+    back to default for the queue.
+  * ename:VK_PERF_HINT_TYPE_FREQUENCY_MIN_QCOM specifies the queue should:
+    prioritize power and sets the frequency constraints `f~min~` and
+    `f~max~` to `F~min~`.
+  * ename:VK_PERF_HINT_TYPE_FREQUENCY_MAX_QCOM specifies the queue should:
+    prioritize performance and sets the frequency constraints `f~min~` and
+    `f~max~` to `F~max~`.
+  * ename:VK_PERF_HINT_TYPE_FREQUENCY_SCALED_QCOM specifies the queue
+    should: be balanced between performance and power and sets the frequency
+    constraint `f~min~` by applying a scale factor to `F~max~`.
+    No constraint is applied to `f~max~`.
+--
+
+endif::VK_QCOM_queue_perf_hint[]
 
 [[devsandqueues-submission]]
 === Queue Submission

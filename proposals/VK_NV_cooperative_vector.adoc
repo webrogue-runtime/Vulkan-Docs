@@ -1,11 +1,11 @@
-// Copyright 2021-2025 The Khronos Group Inc.
+// Copyright 2021-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
 = VK_NV_cooperative_vector
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 // Required so images render in github
 ifndef::images[:images: ../images]

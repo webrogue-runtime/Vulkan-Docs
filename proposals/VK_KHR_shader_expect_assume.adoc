@@ -1,11 +1,11 @@
-// Copyright 2021-2025 The Khronos Group Inc.
+// Copyright 2021-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
 = VK_KHR_shader_expect_assume
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 
 This document proposes adding support for expect/assume SPIR-V instructions
@@ -86,9 +86,8 @@ assume(!isnan(value))
 
 == Issues
 
-1) What shader stages should the instructions introduced by this extension
-be allowed in?
+=== What shader stages should the instructions introduced by this extension be allowed in?
 
-*PROPOSED*: No restrictions are placed on the shader stages the instructions can
+No restrictions are placed on the shader stages the instructions can
 be used in.
 

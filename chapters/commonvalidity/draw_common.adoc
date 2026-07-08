@@ -1,4 +1,4 @@
-// Copyright 2019-2025 The Khronos Group Inc.
+// Copyright 2019-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
@@ -15,9 +15,6 @@ include::{chapters}/commonvalidity/draw_dispatch_common.adoc[]
     pname:subpass member of the sname:VkGraphicsPipelineCreateInfo structure
     specified when creating the sname:VkPipeline bound to
     ename:VK_PIPELINE_BIND_POINT_GRAPHICS
-  * [[VUID-{refpage}-None-07748]]
-    If any shader statically accesses an input attachment, a valid
-    descriptor must: be bound to the pipeline via a descriptor set
   * [[VUID-{refpage}-OpTypeImage-07468]]
     If any shader executed by this pipeline accesses an code:OpTypeImage
     variable with a code:Dim operand of code:SubpassData, it must: be
@@ -38,9 +35,9 @@ ifdef::VK_GRAPHICS_VERSION_1_4,VK_KHR_dynamic_rendering_local_read[]
     code:InputAttachmentIndex referenced by
     slink:VkRenderingInputAttachmentIndexInfo, or no
     code:InputAttachmentIndex if
-    slink:VkRenderingInputAttachmentIndexInfo:pname:pDepthInputAttachmentIndex
+    slink:VkRenderingInputAttachmentIndexInfo::pname:pDepthInputAttachmentIndex
     or
-    slink:VkRenderingInputAttachmentIndexInfo:pname:pStencilInputAttachmentIndex
+    slink:VkRenderingInputAttachmentIndexInfo::pname:pStencilInputAttachmentIndex
     are `NULL`, must: be created with a slink:VkImageView that is compatible
     with the corresponding color, depth, or stencil attachment in
     slink:VkRenderingInfo
@@ -48,9 +45,9 @@ ifdef::VK_EXT_shader_object[]
   * [[VUID-{refpage}-pDepthInputAttachmentIndex-09596]]
     Input attachment views accessed in a dynamic render pass via a shader
     object must: have an code:InputAttachmentIndex if both
-    slink:VkRenderingInputAttachmentIndexInfo:pname:pDepthInputAttachmentIndex
+    slink:VkRenderingInputAttachmentIndexInfo::pname:pDepthInputAttachmentIndex
     and
-    slink:VkRenderingInputAttachmentIndexInfo:pname:pStencilInputAttachmentIndex
+    slink:VkRenderingInputAttachmentIndexInfo::pname:pStencilInputAttachmentIndex
     are non-`NULL`
   * [[VUID-{refpage}-InputAttachmentIndex-09597]]
     If an input attachment view accessed in a dynamic render pass via a
@@ -67,82 +64,56 @@ endif::VK_GRAPHICS_VERSION_1_4,VK_KHR_dynamic_rendering_local_read[]
     If a color attachment is written by any prior command in this subpass or
     by the load, store, or resolve operations for this subpass,
 ifdef::VK_EXT_attachment_feedback_loop_layout[]
-    <<renderpass-feedbackloop,feedback loop>> is not enabled for it, and
-ifdef::VK_EXT_attachment_feedback_loop_dynamic_state[]
-    either:
-  ** {empty}
-endif::VK_EXT_attachment_feedback_loop_dynamic_state[]
-    the ename:VK_PIPELINE_CREATE_COLOR_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT is
-    set on the bound pipeline
-ifdef::VK_EXT_attachment_feedback_loop_dynamic_state[]
-    or
-  ** the last call to flink:vkCmdSetAttachmentFeedbackLoopEnableEXT included
-     ename:VK_IMAGE_ASPECT_COLOR_BIT and
-ifdef::VK_EXT_shader_object[]
-  *** there is no bound graphics pipeline or
-endif::VK_EXT_shader_object[]
-  *** the bound graphics pipeline was created with
-      ename:VK_DYNAMIC_STATE_ATTACHMENT_FEEDBACK_LOOP_ENABLE_EXT
-endif::VK_EXT_attachment_feedback_loop_dynamic_state[]
+    and <<renderpass-feedbackloop,feedback loop>> is not enabled for
+    ename:VK_IMAGE_ASPECT_COLOR_BIT on that attachment,
 endif::VK_EXT_attachment_feedback_loop_layout[]
-
-+
-it must: not be accessed in any way other than as an attachment by this
-command
+    it must: not be accessed in any way other than as an attachment by this
+    command
   * [[VUID-{refpage}-None-10796]]
     If a depth attachment is written by any prior command in this subpass or
     by the load, store, or resolve operations for this subpass,
 ifdef::VK_EXT_attachment_feedback_loop_layout[]
-    <<renderpass-feedbackloop,feedback loop>> is not enabled for it, and
-ifdef::VK_EXT_attachment_feedback_loop_dynamic_state[]
-    either:
-  ** {empty}
-endif::VK_EXT_attachment_feedback_loop_dynamic_state[]
-    the
-    ename:VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT
-    is set on the bound pipeline
-ifdef::VK_EXT_attachment_feedback_loop_dynamic_state[]
-    or
-  ** the last call to flink:vkCmdSetAttachmentFeedbackLoopEnableEXT included
-     ename:VK_IMAGE_ASPECT_DEPTH_BIT and
-ifdef::VK_EXT_shader_object[]
-  *** there is no bound graphics pipeline or
-endif::VK_EXT_shader_object[]
-  *** the bound graphics pipeline was created with
-      ename:VK_DYNAMIC_STATE_ATTACHMENT_FEEDBACK_LOOP_ENABLE_EXT
-endif::VK_EXT_attachment_feedback_loop_dynamic_state[]
+    and <<renderpass-feedbackloop,feedback loop>> is not enabled for
+    ename:VK_IMAGE_ASPECT_DEPTH_BIT on that attachment,
 endif::VK_EXT_attachment_feedback_loop_layout[]
-
-+
-it must: not be accessed in any way other than as an attachment by this
-command
+    it must: not be accessed in any way other than as an attachment by this
+    command
   * [[VUID-{refpage}-None-10797]]
     If a stencil attachment is written by any prior command in this subpass
     or by the load, store, or resolve operations for this subpass,
 ifdef::VK_EXT_attachment_feedback_loop_layout[]
-    <<renderpass-feedbackloop,feedback loop>> is not enabled for it, and
-ifdef::VK_EXT_attachment_feedback_loop_dynamic_state[]
-    either:
-  ** {empty}
-endif::VK_EXT_attachment_feedback_loop_dynamic_state[]
-    the
-    ename:VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT
-    is set on the bound pipeline
-ifdef::VK_EXT_attachment_feedback_loop_dynamic_state[]
-    or
-  ** the last call to flink:vkCmdSetAttachmentFeedbackLoopEnableEXT included
-     ename:VK_IMAGE_ASPECT_STENCIL_BIT and
-ifdef::VK_EXT_shader_object[]
-  *** there is no bound graphics pipeline or
-endif::VK_EXT_shader_object[]
-  *** the bound graphics pipeline was created with
-      ename:VK_DYNAMIC_STATE_ATTACHMENT_FEEDBACK_LOOP_ENABLE_EXT
-endif::VK_EXT_attachment_feedback_loop_dynamic_state[]
+    and <<renderpass-feedbackloop,feedback loop>> is not enabled for
+    ename:VK_IMAGE_ASPECT_STENCIL_BIT on that attachment,
 endif::VK_EXT_attachment_feedback_loop_layout[]
-
-+
-it must: not be accessed in any way other than as an attachment by this
-command
+    it must: not be accessed in any way other than as an attachment by this
+    command
+  * [[VUID-{refpage}-None-12338]]
+    If a color attachment is read in this command in any way other than as
+    an attachment, or has been read by any prior command in this subpass as
+    a non-attachment,
+ifdef::VK_EXT_attachment_feedback_loop_layout[]
+    and <<renderpass-feedbackloop,feedback loop>> is not enabled for
+    ename:VK_IMAGE_ASPECT_COLOR_BIT on that attachment,
+endif::VK_EXT_attachment_feedback_loop_layout[]
+    the color attachment must: not be written to by this command
+  * [[VUID-{refpage}-None-12339]]
+    If a depth attachment is read in this command in any way other than as
+    an attachment, or has been read by any prior command in this subpass as
+    a non-attachment,
+ifdef::VK_EXT_attachment_feedback_loop_layout[]
+    and <<renderpass-feedbackloop,feedback loop>> is not enabled for
+    ename:VK_IMAGE_ASPECT_DEPTH_BIT on that attachment,
+endif::VK_EXT_attachment_feedback_loop_layout[]
+    the depth attachment must: not be written to by this command
+  * [[VUID-{refpage}-None-12340]]
+    If a stencil attachment is read in this command in any way other than as
+    an attachment, or has been read by any prior command in this subpass as
+    a non-attachment,
+ifdef::VK_EXT_attachment_feedback_loop_layout[]
+    and <<renderpass-feedbackloop,feedback loop>> is not enabled for
+    ename:VK_IMAGE_ASPECT_STENCIL_BIT on that attachment,
+endif::VK_EXT_attachment_feedback_loop_layout[]
+    the stencil attachment must: not be written to by this command
 ifdef::VK_EXT_attachment_feedback_loop_layout[]
   * [[VUID-{refpage}-None-09003]]
     If an attachment is written by any prior command in this subpass or by
@@ -150,11 +121,6 @@ ifdef::VK_EXT_attachment_feedback_loop_layout[]
     accessed in any way other than as an attachment, storage image, or
     sampled image by this command
 endif::VK_EXT_attachment_feedback_loop_layout[]
-  * [[VUID-{refpage}-None-06539]]
-    If any previously recorded command in the current subpass accessed an
-    image subresource used as an attachment in this subpass in any way other
-    than as an attachment, this command must: not write to that image
-    subresource as an attachment
   * [[VUID-{refpage}-None-06886]]
     If the current render pass instance uses a depth/stencil attachment with
     a read-only layout for the depth aspect, <<fragops-depth-write, depth
@@ -1864,18 +1830,6 @@ endif::VK_NV_coverage_reduction_mode[]
     flink:vkCmdSetSampleMaskEXT must: be greater or equal to the
     pname:rasterizationSamples parameter in the last call to
     flink:vkCmdSetRasterizationSamplesEXT
-  * [[VUID-{refpage}-rasterizationSamples-07474]]
-    If the bound graphics pipeline state was created with the
-    ename:VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT state enabled, and
-ifdef::VK_EXT_multisampled_render_to_single_sampled[]
-    the <<features-multisampledRenderToSingleSampled,
-    pname:multisampledRenderToSingleSampled>> feature is not enabled, and
-endif::VK_EXT_multisampled_render_to_single_sampled[]
-    neither the `apiext:VK_AMD_mixed_attachment_samples` nor the
-    `apiext:VK_NV_framebuffer_mixed_samples` extensions are enabled, then
-    the pname:rasterizationSamples in the last call to
-    flink:vkCmdSetRasterizationSamplesEXT must: be the same as the current
-    subpass color and/or depth/stencil attachments
 ifdef::VK_EXT_multisampled_render_to_single_sampled[]
   * [[VUID-{refpage}-None-09211]]
     If the bound graphics pipeline state was created with the
@@ -2352,9 +2306,12 @@ endif::VK_EXT_mesh_shader[]
     or <<glossary-identically-defined,identically defined>> push constant
     ranges
   * [[VUID-{refpage}-None-08879]]
-    All bound graphics shader objects must: have been created with identical
-    or <<glossary-identically-defined,identically defined>> arrays of
-    descriptor set layouts
+    All bound graphics shader objects must: have either been created with
+ifdef::VK_EXT_descriptor_heap[]
+    the ename:VK_SHADER_CREATE_DESCRIPTOR_HEAP_BIT_EXT flag set, or with
+endif::VK_EXT_descriptor_heap[]
+    identical or <<glossary-identically-defined,identically defined>> arrays
+    of descriptor set layouts
 ifdef::VK_ANDROID_external_format_resolve[]
   * [[VUID-{refpage}-colorAttachmentCount-09372]]
     If the current render pass instance was begun with
@@ -2475,7 +2432,21 @@ ifdef::VK_EXT_shader_object[]
     If a shader object is bound to any graphics stage, _multiview_
     functionality must: not be enabled in the current render pass
 endif::VK_EXT_shader_object[]
-ifdef::VK_VERSION_1_3,VK_KHR_dynamic_rendering[]
+ifdef::VK_QCOM_multiview_per_view_viewports[]
+  * [[VUID-{refpage}-multiviewPerViewViewports-12262]]
+    If the <<features-multiviewPerViewViewports,
+    pname:multiviewPerViewViewports>> feature is enabled, then the index of
+    the most significant bit in current render pass instance pname:viewMask
+    must: be less than the <<dynamic-state-current-value, current value>> of
+    pname:viewportCount
+  * [[VUID-{refpage}-multiviewPerViewViewports-12263]]
+    If the <<features-multiviewPerViewViewports,
+    pname:multiviewPerViewViewports>> feature is enabled, then the index of
+    the most significant bit in current render pass instance pname:viewMask
+    must: be less than the <<dynamic-state-current-value, current value>> of
+    pname:scissorCount
+endif::VK_QCOM_multiview_per_view_viewports[]
+ifdef::VK_GRAPHICS_VERSION_1_3,VK_KHR_dynamic_rendering[]
 ifdef::VK_EXT_custom_resolve[]
   * [[VUID-{refpage}-flags-11521]]
     If current render pass instance was begun with flink:vkCmdBeginRendering
@@ -2698,6 +2669,44 @@ ifdef::VK_EXT_fragment_density_map+VK_EXT_shader_object[]
     ename:VK_FALSE
 endif::VK_EXT_fragment_density_map+VK_EXT_shader_object[]
 endif::VK_EXT_custom_resolve[]
-endif::VK_VERSION_1_3,VK_KHR_dynamic_rendering[]
+endif::VK_GRAPHICS_VERSION_1_3,VK_KHR_dynamic_rendering[]
+ifdef::VK_KHR_maintenance11[]
+  * [[VUID-{refpage}-flags-13361]]
+    If there are any shader objects bound that were created with pname:flags
+    that includes the ename:VK_SHADER_CREATE_INDEPENDENT_SETS_BIT_KHR bit,
+    then all bound shader objects must: have been created with the
+    ename:VK_SHADER_CREATE_INDEPENDENT_SETS_BIT_KHR bit
+  * [[VUID-{refpage}-flags-13362]]
+    If there are any shader objects bound that were created with pname:flags
+    that includes the ename:VK_SHADER_CREATE_INDEPENDENT_SETS_BIT_KHR bit,
+    then the pipeline layout of the bound descriptor sets must: have been
+    created with ename:VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT
+    set
+ifdef::VK_EXT_shader_object+VK_EXT_mesh_shader[]
+  * [[VUID-{refpage}-flags-13363]]
+    If there are any shader objects bound that were created with pname:flags
+    that includes the ename:VK_SHADER_CREATE_INDEPENDENT_SETS_BIT_KHR bit,
+    and any of the descriptor set layouts used to create the pipeline layout
+    of the bound descriptor sets were created with any binding's
+    slink:VkDescriptorSetLayoutBinding::pname:stageFlags set with
+    ename:VK_SHADER_STAGE_VERTEX_BIT,
+    ename:VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+    ename:VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT or
+    ename:VK_SHADER_STAGE_GEOMETRY_BIT, then there must: be no binding with
+    slink:VkDescriptorSetLayoutBinding::pname:stageFlags set with
+    ename:VK_SHADER_STAGE_TASK_BIT_EXT or ename:VK_SHADER_STAGE_MESH_BIT_EXT
+  * [[VUID-{refpage}-flags-13364]]
+    If there are any shader objects bound that were created with pname:flags
+    that includes both the ename:VK_SHADER_CREATE_INDEPENDENT_SETS_BIT_KHR
+    and ename:VK_SHADER_CREATE_NO_TASK_SHADER_BIT_EXT bits, the pipeline
+    layout of the bound descriptor sets must: have been created with
+    ename:VK_PIPELINE_LAYOUT_CREATE_NO_TASK_SHADER_BIT_KHR set
+  * [[VUID-{refpage}-flags-13365]]
+    If there are any shader objects bound that were created with pname:flags
+    that includes both the ename:VK_SHADER_CREATE_INDEPENDENT_SETS_BIT_KHR
+    and ename:VK_SHADER_CREATE_NO_TASK_SHADER_BIT_EXT bits, there must: be
+    no shader object bound to the ename:VK_SHADER_STAGE_TASK_BIT_EXT stage
+endif::VK_EXT_shader_object+VK_EXT_mesh_shader[]
+endif::VK_KHR_maintenance11[]
 
 // Common Valid Usage

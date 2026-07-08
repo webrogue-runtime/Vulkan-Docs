@@ -1,11 +1,10 @@
-// Copyright 2021-2025 The Khronos Group Inc.
-//
+// Copyright 2021-2026 The Khronos Group Inc.
 // SPDX-License-Identifier: CC-BY-4.0
 
 = Proposal Template
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 // Required so images render in github
 ifndef::images[:images: ../images]
@@ -21,16 +20,43 @@ and custom macros available to specification markup.
 They should only use pure Asciidoctor markup, so they can be viewed in the
 GitHub and GitLab asciidoctor renderers.
 
-When calling out existing API constructs or extensions, the `docs` attribute should be used to link to the relevant part of the Vulkan specification.
-For example - "...used to extend link:{docs}chapters/pipelines.html#VkGraphicsPipelineCreateInfo[VkGraphicsPipelineCreateInfo]..."
+To link to refpages for existing APIs or extensions, use the `xref:` macro
+followed by the `refpages` attribute, the API name, and the `.html` suffix:
+
+Example: xref:{refpages}VkGraphicsPipelineCreateInfo.html[VkGraphicsPipelineCreateInfo]
+
+Example markup:
+
+[source,asciidoc]
+----
+xref:{refpages}VkGraphicsPipelineCreateInfo.html[VkGraphicsPipelineCreateInfo]
+----
+
+To link to an anchor in the specification other than an API or extension
+which has its own refpage, use the `xref:` macro followed by the `docs`
+attribute, the relative path of the file containing that anchor within the
+spec repository, the `.html` suffix, and the anchor:
+
+Example: xref:{docs}chapters/copies.html#copies[copies]
+
+Example markup:
+
+[source,asciidoc]
+----
+xref:{docs}chapters/copies.html#copies[copies]
+----
 
 If adding an image to a proposal document, it must be located in
-`../images/proposals/`, and referred to as
+`../images/proposals/`, and referred to with the `image:` macro
+followed by the `images` attribute:
 
 [source,asciidoc]
 ----
 image::{images}/proposals/filename.svg[image options]
 ----
+
+Only use the `link:` macro when linking to an external website (one not
+found in the Vulkan Docs site).
 ====
 
 A short summary of this proposal should be written here.
@@ -72,9 +98,16 @@ Extraneous details in examples should be omitted (e.g. code examples do not need
 
 This section describes issues with the existing proposal – including both open issues that you have not addressed, and closed issues that are not self-evident from the proposal description.
 
-=== RESOLVED: How are issues written?
+=== How Are Issues Written?
 
-Each issue should be a separate subsection starting with a question, an indication of the status (UNRESOLVED/PROPOSED/RESOLVED), discussion expanding on the question, and a proposal for resolving it if there is one.
+Each issue should be a separate subsection starting with a question, discussion expanding on the question, and a proposal for resolving it if there is one.
+
+While in development, a tag indicating the status (*UNRESOLVED* or
+*PROPOSED*) of the issue can be used in the answer text.
+
+Issues which are resolved do not have tags.
+
+All issues must be resolved and any status tags removed before publication.
 
 == Validation and Tools
 

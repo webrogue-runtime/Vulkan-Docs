@@ -1,10 +1,10 @@
-// Copyright 2023-2025 The Khronos Group Inc.
+// Copyright 2023-2026 The Khronos Group Inc.
 // SPDX-License-Identifier: CC-BY-4.0
 
 = VK_KHR_maintenance6
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 
 This proposal details and addresses the issues solved by the `VK_KHR_maintenance6` extension.

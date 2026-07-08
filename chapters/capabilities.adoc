@@ -1,5 +1,5 @@
-// Copyright 2015-2025 The Khronos Group Inc.
-// Copyright (c) 2018-2020 NVIDIA Corporation
+// Copyright 2014-2026 The Khronos Group Inc.
+// Copyright (c) 2014-2020 NVIDIA Corporation
 // SPDX-License-Identifier: CC-BY-4.0
 
 [[capabilities]]
@@ -917,8 +917,19 @@ including unknown and invalid modifier values.
     If pname:sharingMode is ename:VK_SHARING_MODE_CONCURRENT, then
     pname:pQueueFamilyIndices must: be a valid pointer to an array of
     pname:queueFamilyIndexCount code:uint32_t values
+ifdef::VK_KHR_maintenance11[]
+  * [[VUID-VkPhysicalDeviceImageDrmFormatModifierInfoEXT-maintenance11-13351]]
+    If the <<features-maintenance11,pname:maintenance11>> feature is
+    supported and pname:sharingMode is ename:VK_SHARING_MODE_CONCURRENT,
+    then pname:queueFamilyIndexCount must: be greater than `0`
+endif::VK_KHR_maintenance11[]
   * [[VUID-VkPhysicalDeviceImageDrmFormatModifierInfoEXT-sharingMode-02315]]
-    If pname:sharingMode is ename:VK_SHARING_MODE_CONCURRENT, then
+    If
+ifdef::VK_KHR_maintenance11[]
+    the <<features-maintenance11,pname:maintenance11>> feature is not
+    supported and
+endif::VK_KHR_maintenance11[]
+    pname:sharingMode is ename:VK_SHARING_MODE_CONCURRENT, then
     pname:queueFamilyIndexCount must: be greater than `1`
   * [[VUID-VkPhysicalDeviceImageDrmFormatModifierInfoEXT-sharingMode-02316]]
     If pname:sharingMode is ename:VK_SHARING_MODE_CONCURRENT, each element
@@ -1005,6 +1016,32 @@ endif::VK_COMPUTE_VERSION_1_4,VK_KHR_maintenance6[]
 
 endif::VK_COMPUTE_VERSION_1_1,VK_KHR_sampler_ycbcr_conversion[]
 
+ifdef::VK_EXT_descriptor_heap[]
+ifdef::VK_EXT_fragment_density_map[]
+[open,refpage='VkSubsampledImageFormatPropertiesEXT',desc='Structure specifying image descriptor count for subsampled images',type='structs']
+--
+To determine the number of image descriptors required to support a
+subsampled image created with ename:VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT, add
+slink:VkSubsampledImageFormatPropertiesEXT to the pname:pNext chain of the
+slink:VkImageFormatProperties2 structure in a call to
+fname:vkGetPhysicalDeviceImageFormatProperties2.
+
+The sname:VkSubsampledImageFormatPropertiesEXT structure is defined as:
+
+include::{generated}/api/structs/VkSubsampledImageFormatPropertiesEXT.adoc[]
+
+  * pname:sType is a elink:VkStructureType value identifying this structure.
+  * pname:pNext is `NULL` or a pointer to a structure extending this
+    structure.
+  * pname:subsampledImageDescriptorCount is the number of image descriptors
+    that the implementation uses to access the image.
+
+include::{generated}/validity/structs/VkSubsampledImageFormatPropertiesEXT.adoc[]
+--
+
+endif::VK_EXT_fragment_density_map[]
+endif::VK_EXT_descriptor_heap[]
+
 ifdef::VK_ANDROID_external_memory_android_hardware_buffer[]
 [open,refpage='VkAndroidHardwareBufferUsageANDROID',desc='Struct containing Android hardware buffer usage flags',type='structs']
 --
@@ -1071,15 +1108,16 @@ endif::VK_EXT_host_image_copy[]
   * pname:optimalDeviceAccess returns ename:VK_TRUE if use of host image
     copy has no adverse effect on device access performance, compared to an
     image that is created with exact same creation parameters, and bound to
-    the same slink:VkDeviceMemory, except that
-    ename:VK_IMAGE_USAGE_HOST_TRANSFER_BIT is replaced with
+    the same slink:VkDeviceMemory, except that the
+    ename:VK_IMAGE_USAGE_HOST_TRANSFER_BIT usage flag is replaced with
     ename:VK_IMAGE_USAGE_TRANSFER_SRC_BIT and
     ename:VK_IMAGE_USAGE_TRANSFER_DST_BIT.
   * pname:identicalMemoryLayout returns ename:VK_TRUE if use of host image
     copy has no impact on memory layout compared to an image that is created
     with exact same creation parameters, and bound to the same
-    slink:VkDeviceMemory, except that ename:VK_IMAGE_USAGE_HOST_TRANSFER_BIT
-    is replaced with ename:VK_IMAGE_USAGE_TRANSFER_SRC_BIT and
+    slink:VkDeviceMemory, except that the
+    ename:VK_IMAGE_USAGE_HOST_TRANSFER_BIT usage flag is replaced with
+    ename:VK_IMAGE_USAGE_TRANSFER_SRC_BIT and
     ename:VK_IMAGE_USAGE_TRANSFER_DST_BIT.
 
 The implementation may: return ename:VK_FALSE in pname:optimalDeviceAccess
@@ -1406,10 +1444,10 @@ include::{generated}/validity/structs/VkExternalBufferProperties.adoc[]
 --
 endif::VK_BASE_VERSION_1_1,VK_KHR_external_memory_capabilities[]
 
+
 ifdef::VK_ARM_tensors[]
 [[capabilities-tensor]]
 == Additional Tensor Capabilities
-
 
 [open,refpage='vkGetPhysicalDeviceExternalTensorPropertiesARM',desc='Function for querying external tensor handle capabilities.',type='protos']
 --
@@ -1467,6 +1505,7 @@ include::{generated}/api/structs/VkExternalTensorPropertiesARM.adoc[]
 include::{generated}/validity/structs/VkExternalTensorPropertiesARM.adoc[]
 --
 endif::VK_ARM_tensors[]
+
 
 ifdef::VK_BASE_VERSION_1_1,VK_KHR_external_semaphore_capabilities[]
 [[capabilities-semaphore]]
@@ -1959,6 +1998,40 @@ include::{generated}/validity/protos/vkGetPhysicalDeviceCalibrateableTimeDomains
 --
 endif::VK_KHR_calibrated_timestamps,VK_EXT_calibrated_timestamps[]
 
+
 ifdef::VK_KHR_object_refresh[]
-include::{chapters}/VK_KHR_object_refresh/capabilities.adoc[]
+[[capabilities-object-refresh]]
+== Object Refresh Capabilities
+
+[open,refpage='vkGetPhysicalDeviceRefreshableObjectTypesKHR',desc='Query refreshable objects',type='protos']
+--
+To query the set of object types that require periodic refreshing, call:
+
+include::{generated}/api/protos/vkGetPhysicalDeviceRefreshableObjectTypesKHR.adoc[]
+
+  * pname:physicalDevice is the physical device from which to query the set
+    of refreshable object types.
+  * pname:pRefreshableObjectTypeCount is a pointer to an integer related to
+    the number of refreshable object types available or queried, as
+    described below.
+  * pname:pRefreshableObjectTypes is either `NULL` or a pointer to an array
+    of elink:VkObjectType values, indicating the supported refreshable
+    object types.
+
+If pname:pRefreshableObjectTypes is `NULL`, then the number of refreshable
+object types supported for the given pname:physicalDevice is returned in
+pname:pRefreshableObjectTypeCount.
+Otherwise, pname:pRefreshableObjectTypeCount must: point to a variable set
+by the application to the number of elements in the
+pname:pRefreshableObjectTypes array, and on return the variable is
+overwritten with the number of object types actually written to
+pname:pRefreshableObjectTypes.
+If the value of pname:pRefreshableObjectTypeCount is less than the number of
+refreshable object types supported, at most
+pname:pRefreshableObjectTypeCount object types will be written, and
+ename:VK_INCOMPLETE will be returned instead of ename:VK_SUCCESS, to
+indicate that not all the available object types were returned.
+
+include::{generated}/validity/protos/vkGetPhysicalDeviceRefreshableObjectTypesKHR.adoc[]
+--
 endif::VK_KHR_object_refresh[]

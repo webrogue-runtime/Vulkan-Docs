@@ -1,11 +1,11 @@
-// Copyright 2021-2025 The Khronos Group Inc.
+// Copyright 2021-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
 = VK_EXT_descriptor_buffer
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 
 This document outlines a proposal to make the management of descriptor memory more explicit, allowing descriptors to be present in buffer memory, allowing the data and memory to be managed alongside other buffer objects.
@@ -42,7 +42,7 @@ There are several more-or-less invasive options that could work here:
   . Bypass descriptor sets, and use descriptor set layouts in buffers
   . Bypass descriptor set layouts, and use blobs of memory in buffers that shaders access with explicit layouts
 
-link:{extensions}VK_VALVE_mutable_descriptor_type[VK_VALVE_mutable_descriptor_type] includes support for option 1,
+xref:{refpages}VK_VALVE_mutable_descriptor_type.html[VK_VALVE_mutable_descriptor_type] includes support for option 1,
 through the use of `VK_DESCRIPTOR_SET_LAYOUT_CREATE_HOST_ONLY_POOL_BIT_VALVE` and `VK_DESCRIPTOR_POOL_CREATE_HOST_ONLY_BIT_VALVE`.
 However, this does not fully solve the problem of memory management since we can only *avoid* allocating device memory for descriptors.
 Being able to control where shader-accessible descriptors are allocated is still unavailable to applications.
@@ -91,7 +91,7 @@ This is essentially the same model as `VkBuffer` and `VkImage` allocation.
 When we call `vkCmdBindDescriptorSets`, what we are really doing is binding a buffer of a certain size.
 The shader compiler looks at `VkPipelineLayout` and based on the `DescriptorSet` and `Binding` decorations, it can look up that a descriptor can be read from the bound descriptor set at a specific offset.
 
-As link:{extensions}VK_EXT_descriptor_indexing[VK_EXT_descriptor_indexing] is required, its descriptor limits apply.
+As xref:{refpages}VK_EXT_descriptor_indexing.html[VK_EXT_descriptor_indexing] is required, its descriptor limits apply.
 
 ==== Next level update-after-bind
 
@@ -148,7 +148,7 @@ In terms of state invalidation, whenever a descriptor buffer offset is bound, it
 
 This extension introduces new commands to put shader-accessible descriptors directly in memory.
 Properties of descriptor set layouts may vary based on enabled device features, so new device-level functions are added to query the properties of layouts.
-These calls are invariant across the lifetime of the device, and between link:{docs}chapters/devsandqueues.html#VkDevice[VkDevice] objects created from the same physical device(s), with the same creation parameters.
+These calls are invariant across the lifetime of the device, and between xref:{refpages}VkDevice.html[VkDevice] objects created from the same physical device(s), with the same creation parameters.
 
 [source,c]
 ----
@@ -184,7 +184,7 @@ Descriptor set layouts used for this purpose must be created with a new create f
 VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT = 0x00000010
 ----
 
-Layouts created with this flag must not be used to create a link:{docs}chapters/descriptorsets.html#VkDescriptorSet[VkDescriptorSet] and must not include dynamic uniform buffers or dynamic storage buffers.
+Layouts created with this flag must not be used to create a xref:{refpages}VkDescriptorSet.html[VkDescriptorSet] and must not include dynamic uniform buffers or dynamic storage buffers.
 Applications can achieve the same dynamic offsetting by either updating a descriptor buffer, using push constants, or by using push descriptors.
 The blob of memory corresponding to a descriptor is obtained from resource views directly.
 How applications get that data into device memory is entirely up to them, but the offset must match that obtained from the layout.
@@ -229,7 +229,7 @@ void vkGetDescriptorEXT(
 These APIs extract raw descriptor blob data from objects. The data obtained from these calls can be freely copied around.
 Note that these calls do not know anything about descriptor set layouts. It is the application's responsibility to write descriptors to a suitable location.
 
-A notable change here is that there is no longer any need for link:{docs}chapters/resources.html#VkBufferView[VkBufferView] objects.
+A notable change here is that there is no longer any need for xref:{refpages}VkBufferView.html[VkBufferView] objects.
 Texel buffers are built from buffer device addresses and format instead.
 This improvement is motivated by DX12 portability.
 In some use cases, texel buffers are linearly allocated and having to create and manage a large number of unique view objects is problematic.
@@ -248,7 +248,7 @@ As such, applications are required to provide these samplers as if they were not
 These samplers must have identical parameters to the immutable samplers in the descriptor set layout.
 Alternatively, applications can use dedicated descriptor sets for immutable samplers that do not require app-managed memory, by <<embedded-immutable-samplers, embedding them in a special descriptor set>>.
 
-If the `descriptorBufferImageLayoutIgnored` feature is enabled, the `imageLayout` in link:{docs}chapters/resources.html#VkDescriptorImageInfo[VkDescriptorImageInfo] is ignored, otherwise it specifies the layout that the descriptor will be used with.
+If the `descriptorBufferImageLayoutIgnored` feature is enabled, the `imageLayout` in xref:{refpages}VkDescriptorImageInfo.html[VkDescriptorImageInfo] is ignored, otherwise it specifies the layout that the descriptor will be used with.
 `type` must not be `VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC` or `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC`.
 'format' in `VkDescriptorAddressInfoEXT` is ignored for non-texel buffers.
 
@@ -309,7 +309,7 @@ vkCmdBindDescriptorBuffersEXT(
 Unlike binding descriptor sets, there’s no invalidating going on with this binding – a buffer remains bound and is interpreted by a pipeline in the manner the pipeline expects, irrespective of what layout was used to construct the buffer for each set.
 
 There must be no more than `maxSamplerDescriptorBufferBindings` descriptor buffers containing sampler descriptor data bound.
-Such buffers must be created with `VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT`.
+Such buffers must be created with the `VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT` usage flag set.
 
 There must be no more than `maxResourceDescriptorBufferBindings` descriptor buffers containing resource descriptors bound.
 Such buffers must be bound with `VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT`.
@@ -341,7 +341,7 @@ VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT = 0x00400000
 
 `VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT` specifies that the buffer will be used to contain sampler descriptors when bound as a descriptor buffer.
 `VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT` specifies that the buffer will be used to contain resource descriptors, i.e. non-sampler descriptors, when bound as a descriptor buffer.
-Buffers containing `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER` descriptors must have been created with both `VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT` and `VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT`.
+Buffers containing `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER` descriptors must have been created with both the `VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT` and `VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT` usage flags set.
 
 Each descriptor set is associated with a buffer and an offset into that buffer which can be set by:
 
@@ -423,7 +423,7 @@ When pushing descriptors using this kind of set layout, it is required that a de
 The intention here is that implementation can reserve scratch space in descriptor buffers for the purposes of dealing with push descriptors.
 The mechanics here are highly magical and implementation defined in nature and is considered too burdensome to expect that applications deal with it.
 
-Binding a buffer that was created with `VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT` requires the application to record any current push descriptors again.
+Binding a buffer that was created with the `VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT` usage flag set requires the application to record any current push descriptors again.
 
 === Capture/Replay
 
@@ -514,7 +514,7 @@ typedef struct VkOpaqueCaptureDescriptorDataCreateInfoEXT {
 
 In each case, the size of the capture data is sized to the `bufferCaptureReplayDescriptorDataSize`, `imageCaptureReplayDescriptorDataSize`, `imageViewCaptureReplayDescriptorDataSize`, `samplerCaptureReplayDescriptorDataSize`, or `accelerationStructureCaptureReplayDescriptorDataSize` limits as appropriate.
 
-In addition, link:{docs}chapters/memory.html#vkGetDeviceMemoryOpaqueCaptureAddress[vkGetDeviceMemoryOpaqueCaptureAddress] must be used to capture the opaque address and replay it with link:{docs}chapters/memory.html#VkMemoryOpaqueCaptureAddressAllocateInfo[VkMemoryOpaqueCaptureAddressAllocateInfo], for any memory used by resources with these handles.
+In addition, xref:{refpages}vkGetDeviceMemoryOpaqueCaptureAddress.html[vkGetDeviceMemoryOpaqueCaptureAddress] must be used to capture the opaque address and replay it with xref:{refpages}VkMemoryOpaqueCaptureAddressAllocateInfo.html[VkMemoryOpaqueCaptureAddressAllocateInfo], for any memory used by resources with these handles.
 
 
 === Device Features
@@ -533,7 +533,7 @@ typedef struct VkPhysicalDeviceDescriptorBufferFeaturesEXT {
 } VkPhysicalDeviceDescriptorBufferFeaturesEXT;
 ----
 
-If the `descriptorBuffer` feature is enabled, link:{extensions}VK_AMD_shader_fragment_mask[VK_AMD_shader_fragment_mask] must not be enabled.
+If the `descriptorBuffer` feature is enabled, xref:{refpages}VK_AMD_shader_fragment_mask.html[VK_AMD_shader_fragment_mask] must not be enabled.
 If the `descriptorBufferImageLayoutIgnored` feature is enabled, the image layout provided when getting a descriptor is ignored.
 The `descriptorBufferCaptureReplay` feature is primarily for capture replay tools, and allows opaque data to be captured and replayed, allowing the same descriptor handles to be used on replay.
 If the `descriptorBufferPushDescriptors` features is enabled push descriptors can be used with descriptor buffers.
@@ -586,7 +586,7 @@ typedef struct VkPhysicalDeviceDescriptorBufferPropertiesEXT {
 
 * `descriptorBufferOffsetAlignment` describes the alignment required, in bytes, when setting offsets into the descriptor buffer.
 * `combinedImageSamplerDescriptorSingleArray` indicates that the implementation does not require an array of `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER` descriptors to be written into a descriptor buffer as an array of image descriptors, immediately followed by an array of sampler descriptors.
-* `bufferlessPushDescriptors` indicates that the implementation does not require a buffer created with `VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT` to be bound when using push descriptors.
+* `bufferlessPushDescriptors` indicates that the implementation does not require a buffer created with the `VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT` usage flag set to be bound when using push descriptors.
 * `allowSamplerImageViewPostSubmitCreation` indicates that the implementation does not restrict when the `VkSampler` or `VkImageView` objects used to retrieve descriptor data can be created in relation to command buffer submission. If this value is `VK_FALSE`, then the application must create any `VkSampler` or `VkImageView` objects whose descriptor data is accessed during the execution of a command buffer, before the `vkQueueSubmit` (or `vkQueueSubmit2`) call that submits that command buffer.
 * `maxDescriptorBufferBindings` defines the maximum total number of descriptor buffers and embedded immutable sampler sets that can be bound.
 * `maxResourceDescriptorBufferBindings` defines the maximum number of resource descriptor buffers that can be bound.
@@ -614,7 +614,7 @@ typedef struct VkPhysicalDeviceDescriptorBufferPropertiesEXT {
 * `resourceDescriptorBufferAddressSpaceSize` describes the total amount of address space available, in bytes, for descriptor buffers containing resources.
 * `descriptorBufferAddressSpaceSize` describes the total amount of address space available, in bytes, for all descriptor buffers.
 
-If link:{extensions}VK_VALVE_mutable_descriptor_type[VK_VALVE_mutable_descriptor_type] is used,
+If xref:{refpages}VK_VALVE_mutable_descriptor_type.html[VK_VALVE_mutable_descriptor_type] is used,
 a descriptor is considered to be a union of all the enabled types, so the size of a descriptor is the maximum of all enabled types.
 
 [source,c]
@@ -626,7 +626,7 @@ typedef struct VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT {
 } VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT;
 ----
 
-* `combinedImageSamplerDensityMapDescriptorSize` describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER descriptor when using the VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT flag of the link:{extensions}VK_EXT_fragment_density_map[VK_EXT_fragment_density_map] extension.
+* `combinedImageSamplerDensityMapDescriptorSize` describes the size, in bytes, of a VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER descriptor when using the VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT flag of the xref:{refpages}VK_EXT_fragment_density_map.html[VK_EXT_fragment_density_map] extension.
 
 == Mapping to DirectX® 12 Descriptor Heaps
 
@@ -660,7 +660,7 @@ HRESULT CreateDescriptorHeap(
 Implementing the equivalent functionality in Vulkan would mean the following operations:
 
   * Create a `VkDescriptorSetLayout` with `VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT`. The count would be up to 1000000 for resources, and 2048 for samplers.
-  ** If link:{extensions}VK_VALVE_mutable_descriptor_type[VK_VALVE_mutable_descriptor_type] is supported, we only need one descriptor set layout which supports all descriptor types for the heap type.
+  ** If xref:{refpages}VK_VALVE_mutable_descriptor_type.html[VK_VALVE_mutable_descriptor_type] is supported, we only need one descriptor set layout which supports all descriptor types for the heap type.
   ** Otherwise, there are two alternatives:
   *** Create up to 6 descriptor set layouts of the relevant descriptor types the application cares about (`STORAGE_BUFFER`, `UNIFORM_BUFFER`, `SAMPLED_IMAGE`, `STORAGE_IMAGE`, `UNIFORM_TEXEL_BUFFER`, `STORAGE_TEXEL_BUFFER`).
   *** Create one descriptor set layout with 6 fixed-size arrays instead of using variable descriptor counts. This means `NumDescriptors` is effectively ignored.
@@ -1001,7 +1001,7 @@ for (int i = 0; i < SET_COUNT; i++)
 
 == Issues
 
-=== RESOLVED: How do immutable samplers work?
+=== How do immutable samplers work?
 
 There may be cases where a driver needs immutable samplers stored as part of the descriptor, rather than solely existing as a part of the pipeline.
 With descriptor sets, this could be hidden from the application as the driver controlled how writes were performed – not so with this API.
@@ -1009,83 +1009,83 @@ To fix this, samplers must be used to populate these descriptor bindings as if t
 
 For partity with DX12, a special kind of descriptor set - embedded immutable samplers - are supported as an alternative which follow DX12 restrictions.
 
-=== RESOLVED: Should we support dynamic buffers?
+=== Should we support dynamic buffers?
 
 No, these have very specialized support paths in some drivers, and end up being more pain than it’s worth to support.
 Applications can achieve the same using device addresses in push constants, or pipelined descriptor buffer updates.
 
 
-=== UNRESOLVED: How does this interact with descriptor set invalidation?
+=== How does this interact with descriptor set invalidation?
 
-There’s some extra complication with whether descriptor set layouts work with buffers or sets (`VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT`) that will need sorting.
-Shouldn’t be too difficult and will likely just be along the lines of invalidating sets that don’t match in this regard when binding a new pipeline layout, but it’s too much detail for this design document.
+`vkCmdBindDescriptorBuffersEXT` does not interact with invalidation of sets, and is treated as standalone state.
+`vkCmdSetDescriptorBufferOffsetEXT` will invalidate all descriptor set bindings that are not bound to descriptor buffers, and vice versa - you cannot use a mix of descriptor sets and buffers in the same command.
 
 
-=== RESOLVED: Should `vkGetDescriptorOffset` take an `arrayOffset` parameter, or should we make guarantees about how arrays work?
+=== Should `vkGetDescriptorOffset` take an `arrayOffset` parameter, or should we make guarantees about how arrays work?
 
 Guarantees about how arrays work makes it much easier to work with GPU-side updates, as it avoids having to either add a “get offset” shader intrinsic, or for apps to keep a mapping when doing GPU copies.
 
 
-=== RESOLVED: Now that descriptors are in regular memory, should there be a limit on the size of “inline uniforms”?
+=== Now that descriptors are in regular memory, should there be a limit on the size of “inline uniforms”?
 
 We should allow developers to put as many constants into descriptor buffers as they want, thus removing the limit, at least when it interacts with this extension.
 This is likely to remove an indirection compared to putting these in a uniform buffer.
 Potentially we might want to at least have it match the uniform buffer limit rather than being independent.
 
 
-=== RESOLVED: Why are view objects required when DX12 has no such requirement?
+=== Why are view objects required when DX12 has no such requirement?
 
 DX12 has dedicated heap objects which allow implementations to hide a lot of implementation detail behind them; without them, some vendors rely on view objects to store metadata.
 Introducing heaps to Vulkan as-is was too complex alongside the other changes in this extension, when the primary goal is to enable explicit memory management, rather than precise DX12 compatibility.
 If this turns out to be a significant problem, a future extension could be developed to bridge this gap.
 
 
-=== RESOLVED: Should `vkGetDescriptorEXT` / `vkGetDescriptorSetLayoutBindingOffsetEXT` be arrayed?
+=== Should `vkGetDescriptorEXT` / `vkGetDescriptorSetLayoutBindingOffsetEXT` be arrayed?
 
 No – there is no reason why pulling this loop into the driver should provide any benefit.
 
 
-=== RESOLVED: Should we support combined image/sampler descriptors with this extension?
+=== Should we support combined image/sampler descriptors with this extension?
 
 While some consider these deprecated, removing them would prevent some applications being able to port to this extension.
 Additionally, YCbCr support currently _relies_ on this descriptor type, which is required on some platforms.
 It might be possible to remove that requirement in the YCbCr feature, but it is a lot of work for a fairly low payoff.
 
 
-=== RESOLVED: How does this interact with variable descriptor count?
+=== How does this interact with variable descriptor count?
 
 The variable flag is allowed; `vkGetDescriptorSetLayoutSize` returns a size assuming the maximum size will be used - but developers are free to use the set with a buffer sized for a smaller number of descriptors.  The exception to this is when `combinedImageSamplerDescriptorSingleArray` is `VK_FALSE` and the binding contains `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER` descriptors; in this case the image and sampler descriptors are still arranged in the descriptor buffer as though the maximum number of descriptors are used, and so the buffer must be sized accordingly.
 
 
-=== RESOLVED: Should we require descriptors to be retrieved for `NULL_HANDLE` or is `memset(0)` sufficient?
+=== Should we require descriptors to be retrieved for `NULL_HANDLE` or is `memset(0)` sufficient?
 
 Some vendors use non-zero values for null descriptors, so applications can retrieve these using `VK_NULL_HANDLE` with `vkGetDescriptorEXT`.
 For descriptor types which take buffer devices addresses, a `0` address is used instead.
 
-=== RESOLVED: How can YCbCr descriptors be obtained?
+=== How can YCbCr descriptors be obtained?
 
 YCbCr descriptors can have multiple descriptors associated with them; applications must allow for this space.
 `VkSamplerYcbcrConversionImageFormatProperties::combinedImageSamplerDescriptorCount` determines how many descriptors each image format requires.
 When calling `vkGetDescriptorEXT` for a YCbCr combined descriptor, applications must provide a pointer to enough memory for this many combined sampled image descriptors, and factor this in when copying descriptors.
 
 
-=== RESOLVED: How should we expect capture/replay tooling (e.g. RenderDoc/vktrace) to use this?
+=== How should we expect capture/replay tooling (e.g. RenderDoc/vktrace) to use this?
 
 A capture replay bit on image/buffer creation will be added to enable descriptors to be reused between runs. This allows capture tools to capture the buffer data as bound, and replay with the same descriptors, rather than attempting to do a mapping.
 Some sort of GPU feedback is still desirable on capture to determine which handles are accessed, but this will be similar to the situation with descriptor indexing.
 
 
-=== RESOLVED: On some platforms, descriptor sets occupy a 4GB range, allowing the set pointer to be 32-bit, rather than 64-bit. How can this be guaranteed for descriptor buffers?
+=== On some platforms, descriptor sets occupy a 4GB range, allowing the set pointer to be 32-bit, rather than 64-bit. How can this be guaranteed for descriptor buffers?
 
 This could be done a number of ways – e.g. having unique memory types that guarantee allocation in a 4GB range.
 
 
-=== RESOLVED: Should the alignment be separate from the size?
+=== Should the alignment be separate from the size?
 
 No - the alignment of a descriptor is always the size of the descriptor.
 
 
-=== RESOLVED: What is the fast path for constant data in this new model? Previously most vendors have recommended dynamic UBOs as a fast path, but those go away in this extension.
+=== What is the fast path for constant data in this new model? Previously most vendors have recommended dynamic UBOs as a fast path, but those go away in this extension.
 
 The crucial part of getting data into a shader quickly is mostly dominated by number of indirections, and cache behavior.
 Static accesses with fewer indirections and minimal memory model interactions (e.g. read-only and not `NonPrivate`) will be fastest.
@@ -1102,19 +1102,19 @@ For larger amounts of data, applications should favor allocating buffers and put
 This order listed above is not necessarily true for all IHVs.
 
 
-=== RESOLVED: Should applications be able to mix sets and buffers?
+=== Should applications be able to mix sets and buffers?
 
 Originally the intention was to support this, but at least one vendor cannot support this natively.
 
 
-=== RESOLVED: Should we use buffer device addresses for the buffer arguments?
+=== Should we use buffer device addresses for the buffer arguments?
 
 Buffer parameters in recent extensions have been using device address arguments, so this extension aims to be consistent. Part of the reason for this though, is so that the base address can be modified with a single pointer argument instead of object + offset.
 However, this extension explicitly uses a separate command for setting the offset dynamically compared to the base address, to allow for the application to set the base address statically.
 Having the base address specified with a device address is still useful for consistency though.
 
 
-=== RESOLVED: How does this interact with VK_EXT_pipeline_robustness?
+=== How does this interact with VK_EXT_pipeline_robustness?
 
 There is no way to request robust and non-robust descriptors separately, or specify robust/non-robust descriptors in the set layout, so if
 the `robustBufferAccess` feature is enabled then robust descriptors are always used.

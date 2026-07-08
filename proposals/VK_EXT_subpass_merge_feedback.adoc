@@ -1,11 +1,11 @@
-// Copyright 2022-2025 The Khronos Group Inc.
+// Copyright 2022-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
 = VK_EXT_subpass_merge_feedback
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 
 == Problem Statement
@@ -107,7 +107,7 @@ The structure contains the feedback data from the subpass level.
 
 == Issues
 
-=== RESOLVED: Could the reasons of not merging be enum instead of string?
+=== Could the reasons of not merging be enum instead of string?
 
 New enums are introduced in addition to the string.
 The enums will cover the main reasons and the string will specify the unspecified reason

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2017-2025 The Khronos Group Inc.
+# Copyright 2017-2026 The Khronos Group Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 # testSpecVersion - check if SPEC_VERSION values for an unpublished
@@ -53,6 +53,10 @@ remapBranchName = {
         'VK_NV_partitioned_acceleration_structure',
         'VK_NV_ray_tracing_linear_swept_spheres' ],
     'cooperative_vector' : [ 'VK_NV_cooperative_vector' ],
+    'cgraham/VK_KHR_shader_abort-merge_main' : [
+        'VK_KHR_device_fault',
+        'VK_KHR_shader_abort',
+        'VK_KHR_shader_constant_data' ],
 }
 
 if __name__ == '__main__':

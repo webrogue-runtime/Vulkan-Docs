@@ -1,4 +1,4 @@
-// Copyright 2020-2025 The Khronos Group Inc.
+// Copyright 2020-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
@@ -228,11 +228,19 @@ ifdef::VK_KHR_acceleration_structure,VK_NV_ray_tracing[]
   * [[VUID-{refpage}-{accessMaskName}-03927]]
     If pname:{accessMaskName} includes
     ename:VK_ACCESS_2_ACCELERATION_STRUCTURE_READ_BIT_KHR,
+ifdef::VK_KHR_ray_query[]
+    and the <<features-rayQuery, pname:rayQuery>> feature is enabled,
+endif::VK_KHR_ray_query[]
     pname:{stageMaskName} must: include
+ifdef::VK_NV_ray_tracing,VK_KHR_ray_tracing_pipeline[]
+    ename:VK_PIPELINE_STAGE_2_RAY_TRACING_SHADER_BIT_KHR,
+endif::VK_NV_ray_tracing,VK_KHR_ray_tracing_pipeline[]
+ifdef::VK_KHR_ray_query[]
+    one of the etext:VK_PIPELINE_STAGE_*_SHADER_BIT stages,
+endif::VK_KHR_ray_query[]
     ename:VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-    ename:VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_COPY_BIT_KHR,
-    ename:VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, or one of the
-    etext:VK_PIPELINE_STAGE_*_SHADER_BIT stages
+    ename:VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_COPY_BIT_KHR, or
+    ename:VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT
   * [[VUID-{refpage}-{accessMaskName}-03928]]
     If pname:{accessMaskName} includes
     ename:VK_ACCESS_2_ACCELERATION_STRUCTURE_WRITE_BIT_KHR,
@@ -240,18 +248,19 @@ ifdef::VK_KHR_acceleration_structure,VK_NV_ray_tracing[]
     ename:VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_COPY_BIT_KHR,
     ename:VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_BUILD_BIT_KHR or
     ename:VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT
-  * [[VUID-{refpage}-{accessMaskName}-06256]]
-    If
 ifdef::VK_KHR_ray_query[]
-    the <<features-rayQuery, pname:rayQuery>> feature is not enabled and
+  * [[VUID-{refpage}-{accessMaskName}-06256]]
+    If pname:{accessMaskName} includes
+    ename:VK_ACCESS_2_ACCELERATION_STRUCTURE_READ_BIT_KHR, and the
+    <<features-rayQuery, pname:rayQuery>> feature is not enabled,
+    pname:{stageMaskName} must: include
+ifdef::VK_NV_ray_tracing,VK_KHR_ray_tracing_pipeline[]
+    ename:VK_PIPELINE_STAGE_2_RAY_TRACING_SHADER_BIT_KHR,
+endif::VK_NV_ray_tracing,VK_KHR_ray_tracing_pipeline[]
+    ename:VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+    ename:VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_COPY_BIT_KHR, or
+    ename:VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT
 endif::VK_KHR_ray_query[]
-    pname:{accessMaskName} includes
-    ename:VK_ACCESS_2_ACCELERATION_STRUCTURE_READ_BIT_KHR,
-    pname:{stageMaskName} must: not include any of the
-    etext:VK_PIPELINE_STAGE_*_SHADER_BIT stages
-ifdef::VK_KHR_ray_tracing_pipeline,VK_NV_ray_tracing[]
-    except ename:VK_PIPELINE_STAGE_2_RAY_TRACING_SHADER_BIT_KHR
-endif::VK_KHR_ray_tracing_pipeline,VK_NV_ray_tracing[]
 ifdef::VK_KHR_ray_tracing_maintenance1[]
   * [[VUID-{refpage}-{accessMaskName}-07272]]
     If pname:{accessMaskName} includes
@@ -336,4 +345,14 @@ ifdef::VK_EXT_memory_decompression[]
     pname:{stageMaskName} must: include
     ename:VK_PIPELINE_STAGE_2_MEMORY_DECOMPRESSION_BIT_EXT
 endif::VK_EXT_memory_decompression[]
+ifdef::VK_EXT_descriptor_heap[]
+  * [[VUID-{refpage}-{accessMaskName}-11294]]
+    If pname:{accessMaskName} includes
+    ename:VK_ACCESS_2_SAMPLER_HEAP_READ_BIT_EXT or
+    ename:VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT, pname:{stageMaskName}
+    must: include ename:VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+    ename:VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, or one of
+    etext:VK_PIPELINE_STAGE_*_SHADER_BIT stages
+endif::VK_EXT_descriptor_heap[]
+
 // Common Valid Usage

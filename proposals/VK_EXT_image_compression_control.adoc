@@ -1,11 +1,11 @@
-// Copyright 2022-2025 The Khronos Group Inc.
+// Copyright 2022-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
 = VK_EXT_image_compression_control
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 
 This document proposes adding support for fixed-rate, or 'lossy', image compression.
@@ -240,7 +240,7 @@ vkGetPhysicalDeviceImageFormatProperties2(physicalDevice, &imageFormatInfo, &ima
 
 == Issues
 
-=== RESOLVED: Should we split out the swapchain functionality to a separate extension?
+=== Should we split out the swapchain functionality to a separate extension?
 
 Yes. This is done allow the implementation of the WSI to be independent from the ICD.
 

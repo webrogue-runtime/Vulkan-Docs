@@ -1,5 +1,4 @@
-// Copyright 2015-2025 The Khronos Group Inc.
-//
+// Copyright 2015-2026 The Khronos Group Inc.
 // SPDX-License-Identifier: CC-BY-4.0
 
 [[primsrast]]
@@ -676,6 +675,7 @@ framebuffer location [eq]#(x,y)# and the fragment size [eq]#(f~w~,f~h~)#:
 
 The tables below illustrate the pixel index for multi-pixel fragments:
 
+[[primsrast-pixel-indices-1-wide-table]]
 .Pixel Indices - 1 Wide
 [align="center"]
 |====
@@ -686,6 +686,7 @@ The tables below illustrate the pixel index for multi-pixel fragments:
 .>| image:{images}/pixel_index_1x4.svg[pdfwidth=90pt,align="center",opts="{imageopts}"]
 |====
 
+[[primsrast-pixel-indices-2-wide-table]]
 .Pixel Indices - 2 Wide
 [align="center"]
 |====
@@ -696,6 +697,7 @@ The tables below illustrate the pixel index for multi-pixel fragments:
 .>| image:{images}/pixel_index_2x4.svg[pdfwidth=90pt,align="center",opts="{imageopts}"]
 |====
 
+[[primsrast-pixel-indices-4-wide-table]]
 .Pixel Indices - 4 Wide
 [align="center"]
 |====
@@ -1064,13 +1066,13 @@ For any entry in the array, the following rules also apply:
 Implementations must: support at least the following shading rates:
 
 [options="autowidth"]
-|===
+|====
 | pname:sampleCounts | pname:fragmentSize
 
 | ename:VK_SAMPLE_COUNT_1_BIT \| ename:VK_SAMPLE_COUNT_4_BIT | {2,2}
 | ename:VK_SAMPLE_COUNT_1_BIT \| ename:VK_SAMPLE_COUNT_4_BIT | {2,1}
 | ~0                                                         | {1,1}
-|===
+|====
 
 If <<limits-framebufferColorSampleCounts,
 pname:framebufferColorSampleCounts>>, includes ename:VK_SAMPLE_COUNT_2_BIT,
@@ -1841,8 +1843,8 @@ include::{generated}/api/protos/vkCmdBindShadingRateImageNV.adoc[]
     of ename:VK_FORMAT_R8_UINT
   * [[VUID-vkCmdBindShadingRateImageNV-imageView-02061]]
     If pname:imageView is not dlink:VK_NULL_HANDLE, it must: have been
-    created with a pname:usage value including
-    ename:VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV
+    created with the ename:VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV usage
+    flag set
   * [[VUID-vkCmdBindShadingRateImageNV-imageView-02062]]
     If pname:imageView is not dlink:VK_NULL_HANDLE, pname:imageLayout must:
     match the actual elink:VkImageLayout of each subresource accessible from
@@ -2748,6 +2750,7 @@ endif::VK_EXT_line_rasterization[]
 --
 
 ifdef::VK_EXT_extended_dynamic_state3,VK_EXT_shader_object[]
+ifdef::VK_EXT_line_rasterization[]
 
 [open,refpage='vkCmdSetLineRasterizationModeEXT',desc='Specify the line rasterization mode dynamically for a command buffer',type='protos']
 --
@@ -2838,6 +2841,7 @@ include::{chapters}/commonvalidity/dynamic_state3_feature_common.adoc[]
 include::{generated}/validity/protos/vkCmdSetLineStippleEnableEXT.adoc[]
 --
 
+endif::VK_EXT_line_rasterization[]
 endif::VK_EXT_extended_dynamic_state3,VK_EXT_shader_object[]
 
 endif::VK_GRAPHICS_VERSION_1_4,VK_KHR_line_rasterization,VK_EXT_line_rasterization[]
@@ -3975,14 +3979,14 @@ include::{generated}/api/structs/VkDepthBiasRepresentationInfoEXT.adoc[]
     If the <<features-leastRepresentableValueForceUnormRepresentation,
     pname:leastRepresentableValueForceUnormRepresentation>> feature is not
     enabled, pname:depthBiasRepresentation must: not be
-    `VK_DEPTH_BIAS_REPRESENTATION_LEAST_REPRESENTABLE_VALUE_FORCE_UNORM_EXT`
+    ename:VK_DEPTH_BIAS_REPRESENTATION_LEAST_REPRESENTABLE_VALUE_FORCE_UNORM_EXT
   * [[VUID-VkDepthBiasRepresentationInfoEXT-floatRepresentation-08948]]
     If the <<features-floatRepresentation, pname:floatRepresentation>>
     feature is not enabled, pname:depthBiasRepresentation must: not be
-    `VK_DEPTH_BIAS_REPRESENTATION_FLOAT_EXT`
+    ename:VK_DEPTH_BIAS_REPRESENTATION_FLOAT_EXT
   * [[VUID-VkDepthBiasRepresentationInfoEXT-depthBiasExact-08949]]
     If the <<features-depthBiasExact, pname:depthBiasExact>> feature is not
-    enabled, pname:depthBiasExact must: be `VK_FALSE`
+    enabled, pname:depthBiasExact must: be ename:VK_FALSE
 ****
 
 include::{generated}/validity/structs/VkDepthBiasRepresentationInfoEXT.adoc[]

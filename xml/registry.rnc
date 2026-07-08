@@ -1,4 +1,4 @@
-# Copyright 2013-2025 The Khronos Group Inc.
+# Copyright 2013-2026 The Khronos Group Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 # Relax NG schema for Khronos API Registry XML
@@ -61,7 +61,16 @@ Types = element types { CommentAttr?, (Type | CommentElt)* }
 
 # <type> defines a single type. It is usually a C typedef but
 # may contain arbitrary C code.
-# The attributes are more fully described in the registry schema document.
+# There are many possible valid attribute and tag body combinations, mostly
+# determined by the "category" attribute.
+# The rules below try to reflect the "category".
+# Unfortunately, there is some apparently unavoidable redundancy because
+# every category supports a "name" / "alias" combination to define a type
+# alias, as well as a more detailed schema for defining a non-aliased type.
+#
+# The attributes are fully described in the registry schema document.
+
+
 #
 #   name - name of this type, if not present in the <name> tag
 #   api - matches a <feature> api attribute, if present
@@ -99,7 +108,6 @@ Types = element types { CommentAttr?, (Type | CommentElt)* }
 #       Valid values: 'true', 'false'.
 #   comment - descriptive text with no semantic meaning
 # For types without a category, contents include
-#   <apientry /> - substitutes for an APIENTRY-style macro on output
 #   <name> - contains name of the type being defined
 #   <type> - contains name of types used to define this type. There
 #       may be multiple imbedded <type> tags
@@ -126,7 +134,8 @@ Types = element types { CommentAttr?, (Type | CommentElt)* }
 #           elements in the array. The array is assumed to be tightly packed
 #           if omitted.
 #       deprecated - denotes that this member is marked as legacy, and why.
-#           Valid values: 'ignored', 'true'.
+#           Valid values: 'unused', 'true'.
+#           If the value is 'unused', the member must always be set to 0.
 #       externsync - denotes that the member should be externally synchronized
 #           when accessed by Vulkan
 #       optional - whether this value can be omitted by providing NULL (for
@@ -152,60 +161,178 @@ Types = element types { CommentAttr?, (Type | CommentElt)* }
 #           with changes.
 #   <comment> - containing arbitrary text (unused)
 #
-# *** There is a problem here: I am not sure how to represent the <type>
-# syntax where it may contain arbitrarily interleaved text, <type>, and
-# <enum> child tags. This allows only the syntax
-#   text <type>name</type> text <enum>name</enum> text
-# where <type> and <enum> are both optional and occur in the specified
-# order, which might eventually be a problem.
+
+# Attributes shared by (almost all) type tags
+CommonTypeAttributes =
+    ApiAttr?,
+    CommentAttr?,
+    attribute requires { text }?,
+    attribute deprecated { "unused" | "true" }?
+
+# Type declarations with some minimal structure - a single <name> tag
+# preceded and followed by any amount of text mixed with <type> tags.
+TypeBody =
+        mixed {
+          element type { TypeName_t }
+        }*,
+        mixed {
+         element name { TypeName_t }?
+        }?,
+        mixed {
+          ( element type { TypeName_t }
+            | CommentElt
+          )
+        }*
+
+# Type declarations for fixed-size arrays - like TypeBody above but also
+# allows <enum> tags following the type name, which accommodates all the
+# uses in the Vulkan XML.
+TypeBodyWithEnum =
+        mixed {
+          element type { TypeName_t }
+        }*,
+        mixed {
+          element name { TypeName_t }?
+        }?,
+        mixed {
+          ( element type { TypeName_t }
+            | element enum { VkDefineOrEnumName_t }
+            | CommentElt
+          )
+        }*
+
 Type =
     element type {
-        ApiAttr?,
-        attribute alias { text }?,
-        attribute requires { text }?,
-        attribute bitvalues { text }?,
-        attribute name { TypeName_t }?,
-        attribute category { text }?,
-        attribute deprecated { text }?,
-        attribute parent { TypeName_t }?,
-        attribute returnedonly { text }?,
-        attribute structextends { StringList_t }?,
-        attribute allowduplicate { StringBool_t }?,
-        attribute objtypeenum { text }?,
-        attribute requiredlimittype { StringBool_t }?,
-        CommentAttr?,
-        (((text,
-           element type { text }*)*,
-          element apientry { text }?,
-          (text,
-           element type { text }*)*,
-          element name { TypeName_t }?,
-          (text,
-           element type { text }*)*)
-         | (element member {
-                ApiAttr?,
-                attribute len { text }?,
-                attribute altlen { text }?,
-                attribute stride { text }?,
-                attribute externsync { text }?,
-                OptionalAttr?,
-                attribute selector { text }?,
-                attribute selection { VkEnumNameList_t }?,
-                NoAutoValidityAttr?,
-                attribute values { VkEnumNameList_t }?,
-                attribute limittype { text }?,
-                attribute objecttype { text }?,
-                attribute deprecated { text }?,
-                attribute featurelink { text }?,
-                mixed {
-                    element type { TypeName_t }?,
-                    element name { text }?,
-                    element enum { VkDefineOrEnumName_t }?,
-                    CommentElt?
-                }+
-            }
-            | CommentElt)*)
+        TypeBasetype
+      | TypeBitmask
+      | TypeDefine
+      | TypeEnum
+      | TypeFuncpointer
+      | TypeHandle
+      | TypeInclude
+      | TypeRequires
+      | TypeStruct
     }
+
+TypeBasetype =
+    CommonTypeAttributes,
+    attribute category { "basetype" },
+    TypeBody
+
+TypeBitmask =
+    CommonTypeAttributes,
+    attribute category { "bitmask" },
+    (
+       ( NameAttr,
+         attribute alias { text }
+       )
+     | ( NameAttr?,
+         attribute bitvalues { text }?,
+         TypeBody
+       )
+    )
+
+TypeDefine =
+    CommonTypeAttributes,
+    attribute category { "define" },
+    NameAttr?,
+    TypeBody
+
+TypeEnum =
+    CommonTypeAttributes,
+    attribute category { "enum" },
+    NameAttr,
+    attribute alias { text }?
+
+# funcpointers do not support "alias" attributes yet
+TypeFuncpointer =
+    CommonTypeAttributes,
+    attribute category { "funcpointer" },
+    element proto {
+        mixed {
+            element type { TypeName_t }?,
+            element name { text }
+        }
+    },
+    element param {
+        ApiAttr?,
+        attribute len { text }?,
+        attribute altlen { text }?,
+        attribute stride { text }?,
+        attribute externsync { text }?,
+        OptionalAttr?,
+        attribute selector { text }?,
+        NoAutoValidityAttr?,
+        attribute objecttype { text }?,
+        attribute validstructs { VkTypeNameListRef_t }?,
+        mixed {
+            element type { TypeName_t }?,
+            element name { text }?
+        }
+    }*
+
+TypeHandle =
+    CommonTypeAttributes,
+    attribute category { "handle" },
+    (
+       ( NameAttr,
+         attribute alias { text }
+       )
+     | ( attribute parent { TypeName_t }?,
+         attribute objtypeenum { text },
+         TypeBody
+       )
+    )
+
+TypeInclude =
+    CommonTypeAttributes,
+    attribute category { "include" },
+    attribute name { text },
+    text
+
+# Cannot use CommonTypeAttributes because "requires" is not optional for
+# this pattern.
+TypeRequires =
+    ApiAttr?,
+    CommentAttr?,
+    attribute deprecated { "unused" | "true" }?,
+    attribute name { TypeName_t },
+    attribute requires { text }
+
+TypeStruct =
+    CommonTypeAttributes,
+    attribute category { "struct" | "union" },
+    (
+       ( NameAttr,
+         attribute alias { text }
+       )
+     | ( attribute name { TypeName_t },
+         attribute returnedonly { "true" }?,
+         attribute structextends { StringList_t }?,
+         attribute allowduplicate { "true" | "false" }?,
+         attribute requiredlimittype { "true" }?,
+         (
+           element member {
+               ApiAttr?,
+               attribute len { text }?,
+               attribute altlen { text }?,
+               attribute stride { text }?,
+               attribute externsync { text }?,
+               OptionalAttr?,
+               attribute selector { text }?,
+               attribute selection { VkEnumNameList_t }?,
+               NoAutoValidityAttr?,
+               attribute values { VkEnumNameList_t }?,
+               attribute limittype { text }?,
+               attribute objecttype { text }?,
+               attribute deprecated { text }?,
+               attribute featurelink { text }?,
+               TypeBodyWithEnum
+           }
+           | CommentElt
+         )*
+       )
+    )
 
 # <enums> defines a group of enumerants
 #   name - identifies a type name associated with this group. Should
@@ -217,7 +344,7 @@ Enums =
     element enums {
         attribute name { text }?,
         attribute type { text },
-        attribute bitwidth { "32" | "64" }?,
+        attribute bitwidth { "32" | "64" } ?,
         CommentAttr?,
         (Enum | Unused | CommentElt)*
     }
@@ -253,7 +380,7 @@ Enums =
 #   protect - additional #ifdef symbol to place around the enum
 #   comment - descriptive text with no semantic meaning
 #   deprecated - denotes that this enum is marked as legacy, and why.
-#       Valid values: 'aliased', 'ignored', 'true'.
+#       Valid values: 'aliased', 'unused', 'true'.
 Enum =
     element enum {
         ((attribute value { text }
@@ -268,12 +395,22 @@ Enum =
          | (attribute extends { VkTypeNameRef_t }?
             & attribute alias {
                   VkTypeNameRef_t | VkDefineOrEnumName_t
+              })
+         | (attribute value { text }
+            & attribute extends { VkTypeNameRef_t }?
+            & attribute alias {
+                  VkTypeNameRef_t | VkDefineOrEnumName_t
+              })
+         | (attribute bitpos { xsd:long }
+            & attribute extends { VkTypeNameRef_t }?
+            & attribute alias {
+                  VkTypeNameRef_t | VkDefineOrEnumName_t
               }))?
         & ProtectAttr?
         & ApiAttr?
         & attribute type { "uint8_t" | "uint32_t" | "uint64_t" | "float" }?
         & attribute name { VkDefineOrEnumName_t }
-        & attribute deprecated { "aliased" | "ignored" | "true" }?
+        & attribute deprecated { "aliased" | "unused" | "true" }?
         & CommentAttr?
     }
 
@@ -446,7 +583,7 @@ Feature =
                ProfileNameAttr?,
                CommentAttr?,
                attribute explanationlink { text } ,
-               (InterfaceElement | CommentElt)*
+               (DeprecateElement | CommentElt)*
          }
          | element remove {
                ProfileNameAttr?,
@@ -530,7 +667,7 @@ Extension =
             attribute explanationlink { text } ,
                ProfileNameAttr?,
                CommentAttr?,
-               (InterfaceElement | CommentElt)*
+               (DeprecateElement | CommentElt)*
          }
          | element remove {
                ApiAttr?,
@@ -840,6 +977,30 @@ InterfaceElement =
           CommentAttr?
       }
 
+# Contents of a <deprecate> tag, defining a group of features to deprecate.
+#   <type> / <enum> / <command> all have attributes
+#     name - feature name which must match
+# The NameAttr of a feature element may be a comma-separated list to indicate
+# that any one of the named features must be supported
+DeprecateElement =
+    element type {
+# The 'name' can be an arbitrary string, such as a C #include path, in which case this fails
+#        attribute name { xsd:NCName },
+        attribute name { text },
+        attribute supersededby { text }?,
+        CommentAttr?
+    }
+    | element enum {
+        attribute name { VkDefineOrEnumName_t },
+        attribute supersededby { VkDefineOrEnumName_t }?,
+        CommentAttr?
+    }
+    | element command {
+          attribute name { VkFuncName_t },
+          attribute supersededby { VkFuncName_t }?,
+          CommentAttr?
+      }
+
 # Data types - all end in _t
 MemberOrParamName_t =
     xsd:NCName { pattern = "[a-z]([a-z0-9]*)([A-Z][a-z0-9]*)*" }
@@ -915,7 +1076,11 @@ ExtensionNameAttr = attribute extension { VkExtName_t }
 VendorAttr = attribute vendor { VendorIdRef_t }
 CommentAttr = attribute comment { text }
 NameAttr = attribute name { xsd:NCName }
-ProtectAttr = attribute protect { VkUpperSnakeCase_t }
+# ProtectAttr supports boolean expressions like depends (using +, operators and parentheses)
+ProtectAttr =
+    attribute protect {
+        xsd:token { pattern = "[!(),+_A-Z0-9]+" }
+    }
 
 # Optional attributes that must be true if present.
 NoAutoValidityAttr = attribute noautovalidity { "true" }

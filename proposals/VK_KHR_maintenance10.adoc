@@ -1,10 +1,10 @@
-// Copyright 2025 The Khronos Group Inc.
+// Copyright 2025-2026 The Khronos Group Inc.
 // SPDX-License-Identifier: CC-BY-4.0
 
 = VK_KHR_maintenance10
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 
 This proposal details and addresses the issues solved by the
@@ -73,7 +73,7 @@ to enable reuse in more extensions.
 === Add flags for extending dynamic rendering attachment info
 
 When dynamic rendering was developed, the `VkRenderingAttachmentInfo` was created lacking a `flags` member for
-easy extendability. Legacy render passes have a `flags`` member for attachment descriptions. 
+easy extendability. Legacy render passes have a `flags`` member for attachment descriptions.
 
 This extension allows chaining the following struct to `VkRenderingAttachmentInfo`:
 

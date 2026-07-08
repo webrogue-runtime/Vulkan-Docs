@@ -1,10 +1,19 @@
-// Copyright 2014-2025 The Khronos Group Inc.
+// Copyright 2014-2026 The Khronos Group Inc.
 // SPDX-License-Identifier: CC-BY-4.0
 
 [appendix]
 [[revisions]]
 = Revision History
 
+* 2026-02-18 - Disallow <<naming-typenames, type names>> matching command
+  parameter or structure member names (public issue 2679).
+* 2026-02-03 - Expand the <<markup-sample-section-tables, Tables>> section
+  to require an explicit anchor (public issue 2670).
+* 2026-01-05 - Recommend use of the `nextfreebits.py` script when
+  <<extensions-reserving-bitmask-values, reserving new bitmask values>>.
+* 2025-12-09 - Update the <<extensions, API Versions, Extensions, and
+  Layers>> section to discourage adding new markup files other than entirely
+  new chapters or appendices (internal MR 7893).
 * 2025-11-13 - Require use of "`for each element`" when writing
   <<sample-writing-explicit-vu, explicit valid usage statements>> to be
   evaluated independent for elements of an array (internal issue 4534).
@@ -191,8 +200,8 @@
 * 2019-12-15 - Add a markup section on <<markup-macros-prime-symbols, Prime
   Symbols>> (internal issue 1110).
 * 2019-11-27 - Expand the <<writing-pNext-chain, Describing Extension
-  Structure Chains>> section and make all spec language consistent with it
-  (internal issue 1814).
+  Structure Chains>> section and make all specification language consistent
+  with it (internal issue 1814).
 * 2019-09-09 - Define markup for nested structure members in the
   <<markup-macros-api, API Markup Macros>> section (internal issue 1765).
 * 2019-09-08 - Add language to the end of the

@@ -1,4 +1,4 @@
-// Copyright 2015-2025 The Khronos Group Inc.
+// Copyright 2015-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
@@ -88,13 +88,32 @@ There are however a few exceptions:
 ----
 
 
+[[naming-typenames]]
 == Type Names
 
 Type names are declared with no separator between words.
 Each word starts with a capital letter, and every other character in each
 word is lower case.
 
-Each type name is prefixed with `Vk`.
+Type names are prefixed with `Vk`, except for external type names used when
+integrating with platform APIs and window systems.
+
+Type names must not match the names of the command parameter or structure
+member they apply to.
+
+[source,c]
+.Example
+----
+// Disallowed, type name identical to member name
+typedef struct VkExample {
+    ubm_device  ubm_device;
+} VkExample;
+
+// Allowed
+typedef struct VkExample {
+    ubm_device  device;
+} VkExample;
+----
 
 This rule applies to all type definitions except <<naming-funcpointers,
 function pointer types>>, including struct and union types, handles, base
@@ -129,7 +148,7 @@ typedef union VkClearColorValue {
 [[naming-extension-structures]]
 === Extending Structure Names
 
-Structures which extend a base structures through its pname:pNext chain
+Structures which extend a base structure through its pname:pNext chain
 should reflect the name of the base structure.
 Currently there are two examples of such naming schemes.
 
@@ -326,7 +345,7 @@ The list is not guaranteed to be up to date, but covers all core and KHR
 verbs at the time of writing.
 
 [%autowidth,options="header"]
-|===
+|====
 | Verb       | Meaning
 | Acquire    | Acquire ownership of an object from an external source
 | Allocate   | Allocates memory in a pool or memory heap and creates object - paired with "`Free`"
@@ -361,7 +380,7 @@ verbs at the time of writing.
 | Update     | Updates entries in a descriptor set
 | Wait       | Waits for some signal
 | Write      | Writes values to an object
-|===
+|====
 
 
 [[naming-funcpointers]]
@@ -507,8 +526,8 @@ typedef struct VkSurfaceFormatKHR {
 
 Enumerants defined by extensions have the author ID appended to the end of
 the enumerant name, separated by an underscore.
-This includes the begin, end, range and max values added to enumeranted type
-definitions by the generator scripts.
+This includes the begin, end, range, and max values added to enumeranted
+type definitions by the generator scripts.
 
 [NOTE]
 ====

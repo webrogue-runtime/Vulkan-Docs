@@ -1,4 +1,4 @@
-// Copyright 2014-2025 The Khronos Group Inc.
+// Copyright 2014-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
@@ -118,7 +118,17 @@ include::{chapters}/images.adoc[]
 ifdef::VK_COMPUTE_VERSION_1_0[]
 include::{chapters}/samplers.adoc[]
 
+include::{chapters}/descriptors.adoc[]
+
+ifdef::VK_EXT_descriptor_heap[]
+include::{chapters}/descriptorheaps.adoc[]
+endif::VK_EXT_descriptor_heap[]
+
 include::{chapters}/descriptorsets.adoc[]
+
+ifdef::VK_EXT_descriptor_buffer[]
+include::{chapters}/descriptorbuffers.adoc[]
+endif::VK_EXT_descriptor_buffer[]
 
 include::{chapters}/interfaces.adoc[]
 

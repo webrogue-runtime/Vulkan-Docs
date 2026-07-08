@@ -5,7 +5,7 @@
 = VK_EXT_non_seamless_cube_map
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 
 == Problem Statement
@@ -36,13 +36,14 @@ This solution is adopted for this problem.
 
 == Proposal
 
-```c
+[source,c]
+----
 typedef struct VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT {
     VkStructureType    sType;
     void*              pNext;
     VkBool32           nonSeamlessCubeMap;
 } VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT;
-```
+----
 
 `nonSeamlessCubeMap` is the feature enabling this extension’s functionality.
 

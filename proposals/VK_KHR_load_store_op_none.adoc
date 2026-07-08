@@ -1,11 +1,11 @@
-// Copyright 2023-2025 The Khronos Group Inc.
+// Copyright 2023-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
 = VK_KHR_load_store_op_none
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 
 This document describes useful load and store ops that did not exist in Vulkan 1.0.

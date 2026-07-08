@@ -1,11 +1,11 @@
-// Copyright 2021-2025 The Khronos Group Inc.
+// Copyright 2021-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
 = VK_EXT_calibrated_timestamps
 :toc: left
 :docs: https://docs.vulkan.org/spec/latest/
-:extensions: {docs}appendices/extensions.html#
+:refpages: https://docs.vulkan.org/refpages/latest/refpages/source/
 :sectnums:
 
 This extension provides a way to calibrate timestamps captured from different devices in the same system and guarantees monotonicity of captured timestamps.
@@ -51,7 +51,7 @@ This extension exposes a way to capture roughly simultaneous timestamps from mul
 
 When this extension is enabled on a device, the device timestamps returned by vkCmdWriteTimestamp must be monotonic; for any two timestamps where one happens after the other according to Vulkan synchronization guarantees, the timestamp that happens after must not return a lower timestamp value.
 The only exception to this is if the system has been running for a long enough time that the timestamp value overflows its storage, at which point it must wrap back to zero.
-For 64-bit timestamps this is practically never going to happen, but it could be observable if a 32-bit timestamp query is used. 
+For 64-bit timestamps this is practically never going to happen, but it could be observable if a 32-bit timestamp query is used.
 
 
 === Timestamp Domains
@@ -78,7 +78,7 @@ Similarly, on Linux and Linux-derived systems that support it, `VK_TIME_DOMAIN_C
 
 For Windows systems, `VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_EXT` corresponds to the time domain used by https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter[QueryPerformanceCounter].
 
-Finally, the `VK_TIME_DOMAIN_DEVICE_EXT` is the time domain used by the device for all link:{docs}chapters/queries.html#vkCmdWriteTimestamp[vkCmdWriteTimestamp] commands on any queue that supports timestamps.
+Finally, the `VK_TIME_DOMAIN_DEVICE_EXT` is the time domain used by the device for all xref:{refpages}vkCmdWriteTimestamp.html[vkCmdWriteTimestamp] commands on any queue that supports timestamps.
 
 Implementations must always expose the device domain and at least one other domain when this extension is supported.
 
