@@ -10850,7 +10850,7 @@ typedef void* <name>MTLSharedEvent_id</name>;
             <member values="VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_WEBROGUE"><type>VkStructureType</type> <name>sType</name></member>
             <member optional="true">const <type>void</type>*                       <name>pNext</name></member>
             <member optional="true"><type>VkSurfaceCreateFlagsWEBROGUE</type>      <name>flags</name></member>
-            <member><type>void</type>*                                             <name>window</name></member>
+            <member><type>uint32_t</type>                                          <name>webrogue_window_id</name></member>
         </type>
         <type category="struct" name="VkExternalComputeQueueDeviceCreateInfoNV" structextends="VkDeviceCreateInfo">
             <member values="VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_DEVICE_CREATE_INFO_NV"><type>VkStructureType</type> <name>sType</name></member>
@@ -30835,7 +30835,7 @@ endif::VK_KHR_internally_synchronized_queues[]
                 <enum value="&quot;VK_EXT_extension_623&quot;"              name="VK_EXT_EXTENSION_623_EXTENSION_NAME"/>
             </require>
         </extension>
-        <extension name="VK_WEBROGUE_surface" number="1234" type="instance" depends="VK_KHR_surface" platform="webrogue" author="WEBROGUE" contact="Artem Borovik @idk" supported="vulkan" ratified="vulkan" nofeatures="true">
+        <extension name="VK_WEBROGUE_surface" number="1001" type="instance" depends="VK_KHR_surface" platform="webrogue" author="WEBROGUE" contact="Artem Borovik @idk" supported="vulkan" ratified="vulkan" nofeatures="true">
             <require>
                 <enum value="1"                                                 name="VK_WEBROGUE_SURFACE_SPEC_VERSION"/>
                 <enum value="&quot;VK_WEBROGUE_surface&quot;"                   name="VK_WEBROGUE_SURFACE_EXTENSION_NAME"/>
